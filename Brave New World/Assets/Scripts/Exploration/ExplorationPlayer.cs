@@ -75,7 +75,7 @@ namespace BraveNewWorld
             //#endif
         }
 
-        void ShowPossibleMovement()
+        /*void ShowPossibleMovement()
         {
 
             movementParent = new GameObject("MovementParent").transform;
@@ -91,9 +91,17 @@ namespace BraveNewWorld
                     if (((int)transform.position.x + i > 0 && (int)transform.position.x + i < explorationManager.boardManager.boardSize.x) &&
                         ((int)transform.position.y + j > 0 && (int)transform.position.y + j < explorationManager.boardManager.boardSize.y))
                     {
-                        if (((Mathf.Abs(i) + Mathf.Abs(j)) <= movementRange) && (!explorationManager.boardManager.board[(int)transform.position.x + i, (int)transform.position.y + j].isOccupied))
+                        if ((Mathf.Abs(i) + Mathf.Abs(j)) <= movementRange)
                         {
-                            possibleMovement.Add(new Vector2(transform.position.x + i, transform.position.y + j));
+                            if (explorationManager.boardManager.board[(int)transform.position.x + i, (int)transform.position.y + j].isOccupied)
+                            {
+                                //continue;
+                            }
+                            else
+                            {
+                                //Debug.Log("X: " + (int)transform.position.x + i + " Y: " + (int)transform.position.y + j + " gcost: " + explorationManager.boardManager.board[(int)transform.position.x + i, (int)transform.position.y + j].gCost);
+                                possibleMovement.Add(new Vector2(transform.position.x + i, transform.position.y + j));
+                            }
                         }
                     }
                 }
@@ -108,6 +116,55 @@ namespace BraveNewWorld
             }
 
             showedPossibleMovements = true;
+        }*/
+
+        void ShowPossibleMovement()
+        {
+
+            movementParent = new GameObject("MovementParent").transform;
+            movementParent.transform.SetParent(explorationManager.boardManager.boardParent);
+
+            possibleMovement.Clear();
+
+            CalculatePossiblePosition(movementRange, transform.position);
+
+            GameObject instance;
+
+            for (int i = 0; i < possibleMovement.Count; i++)
+            {
+                instance = Instantiate(movementHighlight, possibleMovement[i], Quaternion.identity) as GameObject;
+                instance.transform.SetParent(movementParent);
+            }
+
+            showedPossibleMovements = true;
+        }
+
+        void CalculatePossiblePosition(int steps, Vector2 pos)
+        {
+            if (steps < 0)
+                return;
+
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    if (Mathf.Abs(i) == Mathf.Abs(j))
+                        continue;
+                    if (((int)pos.x + i > 0 && (int)pos.x + i < explorationManager.boardManager.boardSize.x) &&
+                    ((int)pos.y + j > 0 && (int)pos.y + j < explorationManager.boardManager.boardSize.y))
+                    {
+                        if (!explorationManager.boardManager.board[(int)pos.x + i, (int)pos.y + j].isOccupied)
+                        {
+                            if (!possibleMovement.Contains(new Vector2(pos.x, pos.y)))
+                            {
+                                possibleMovement.Add(new Vector2(pos.x, pos.y));                                                                    
+                            }
+                            CalculatePossiblePosition(steps - 1, new Vector2(pos.x + i, pos.y + j));
+                        }
+                    }
+                }
+            }
+            
         }
 
         //This method returns the game object that was clicked using Raycast 2D
