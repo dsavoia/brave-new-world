@@ -41,7 +41,7 @@ namespace BraveNewWorld
         IEnumerator MockEnemiesTurn()
         {
             waitingForMovement = true;
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(1.5f);
             playersTurn = true;
             waitingForMovement = false;
         }

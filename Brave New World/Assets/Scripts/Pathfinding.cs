@@ -10,7 +10,10 @@ namespace BraveNewWorld
 
         ExplorationSceneManager explorationManager;
 
-        public Transform seeker, target;
+        //public Transform seeker, target;
+
+        public GameObject pathPrefab;
+        private Transform pathParent;
 
         void Awake()
         {
@@ -21,12 +24,12 @@ namespace BraveNewWorld
         {
             //if (Input.GetMouseButtonDown(0))
             //{
-                FindPath(seeker.position, target.position);
+                //FindPath(seeker.position, target.position);
             //}
 
         }
 
-        void FindPath(Vector3 startPos, Vector3 targetPos)
+        public List<Tile> FindPath(Vector3 startPos, Vector3 targetPos)
         {
             //Debug.Log("Calculating Path");
             //Debug.Log(startPos);
@@ -56,8 +59,7 @@ namespace BraveNewWorld
 
                 if (currentTile == targetTile)
                 {
-                    RetracePath(startTile, targetTile);
-                    return;
+                    return RetracePath(startTile, targetTile);                    
                 }
 
                 foreach (Tile neighbour in explorationManager.boardManager.GetNeighbours(currentTile))
@@ -81,9 +83,11 @@ namespace BraveNewWorld
                     }
                 }
             }
+
+            return null;
         }
 
-        void RetracePath(Tile startTile, Tile targetTile)
+        List<Tile> RetracePath(Tile startTile, Tile targetTile)
         {
             List<Tile> path = new List<Tile>();
             Tile currentTile = targetTile;
@@ -95,7 +99,9 @@ namespace BraveNewWorld
             }
 
             path.Reverse();
-            ShowPath(path);
+
+            return path;
+            //ShowPath(path);
             //Debug.Log(path.ToArray());
 
         }
@@ -113,11 +119,9 @@ namespace BraveNewWorld
                 return 14 * dstY + 10 * (dstX - dstY);
             return 14 * dstX + 10 * (dstY - dstX);*/
 
-        }
+        }       
 
-        public GameObject pathPrefab;
-        private Transform pathParent;
-        void ShowPath(List<Tile> finalPath)
+        /*void ShowPath(List<Tile> finalPath)
         {
             if (pathParent != null)
                 Destroy(pathParent.gameObject);
@@ -134,7 +138,7 @@ namespace BraveNewWorld
             }
 
             //showedPossibleMovements = true;
-        }
+        }*/
 
     }
 }

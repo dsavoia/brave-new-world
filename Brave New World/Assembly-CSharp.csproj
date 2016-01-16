@@ -53,8 +53,11 @@
      <Compile Include="Assets\Completed\Scripts\Player.cs" />
      <Compile Include="Assets\Completed\Scripts\SoundManager.cs" />
      <Compile Include="Assets\Completed\Scripts\Wall.cs" />
+     <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />
+     <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />
      <Compile Include="Assets\Scripts\CameraMovement.cs" />
      <Compile Include="Assets\Scripts\Exploration\BoardManager.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationMovableObject.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationPlayer.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationSceneManager.cs" />
      <Compile Include="Assets\Scripts\Exploration\Tile.cs" />
@@ -70,12 +73,16 @@
      <Compile Include="Assets\Scripts\Tutorial Version\Player.cs" />
      <Compile Include="Assets\Scripts\Tutorial Version\SoundManager.cs" />
      <Compile Include="Assets\Scripts\Tutorial Version\Wall.cs" />
+     <None Include="Assets\Demigiant\DOTween\readme.txt" />
      <None Include="Assets\Fonts\OFL.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTween">
+ <HintPath>C:/Desenvolvimento/Brave New World/src/Brave New World/Assets/Demigiant/DOTween/DOTween.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

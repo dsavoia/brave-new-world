@@ -144,7 +144,7 @@ namespace BraveNewWorld
             }
         }
 
-        /*public List<Tile> path;
+        public List<Tile> path;
         public void ShowPath()
         {
             if(board != null)
@@ -168,6 +168,6 @@ namespace BraveNewWorld
                     }
                 }
             }
-        }*/
+        }
     }
 }
