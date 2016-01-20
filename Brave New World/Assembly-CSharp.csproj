@@ -57,6 +57,7 @@
      <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />
      <Compile Include="Assets\Scripts\CameraMovement.cs" />
      <Compile Include="Assets\Scripts\Exploration\BoardManager.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationEnemy.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationMovableObject.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationPlayer.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationSceneManager.cs" />

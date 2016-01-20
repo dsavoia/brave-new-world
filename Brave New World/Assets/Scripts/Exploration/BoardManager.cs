@@ -142,32 +142,6 @@ namespace BraveNewWorld
                 instance = Instantiate(obstacles[i].tile, obstacles[i].position, Quaternion.identity) as GameObject;
                 instance.transform.SetParent(obstaclesParent);
             }
-        }
-
-        public List<Tile> path;
-        public void ShowPath()
-        {
-            if(board != null)
-            {
-                foreach (Tile t in board)
-                {
-                    
-                    if(path != null)
-                    {
-                        
-                        if (path.Contains(t))
-                        {                           
-                            //Gizmos.color = Color.yellow;
-                            //Gizmos.DrawCube(new Vector3(t.position.x, t.position.y, 0), Vector3.one);
-                            Debug.Log(t.position);
-                            //board[(int)t.position.x, (int)t.position.y].tile.GetComponent<SpriteRenderer>().color = Color.yellow;
-                        }//else
-                            //board[(int)t.position.x, (int)t.position.y].tile.GetComponent<SpriteRenderer>().color = Color.red;
-
-
-                    }
-                }
-            }
-        }
+        }       
     }
 }
