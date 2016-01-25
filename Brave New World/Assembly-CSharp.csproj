@@ -61,6 +61,7 @@
      <Compile Include="Assets\Scripts\Exploration\ExplorationMovableObject.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationPlayer.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationSceneManager.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationStateEnum.cs" />
      <Compile Include="Assets\Scripts\Exploration\Tile.cs" />
      <Compile Include="Assets\Scripts\Exploration\TileTypeEnum.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />

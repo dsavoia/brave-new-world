@@ -5,30 +5,35 @@ using System.Collections.Generic;
 namespace BraveNewWorld
 {
     public class ExplorationSceneManager : MonoBehaviour
-    {
+    {     
 
+        public ExplorationStateEnum explorationState;
 
         public Vector2 boardSize;
         public int obstaclesQuantitity, enemiesQty;
 
-        public bool playersTurn, enemiesTurn;
-        private bool enemiesMoving = false;
-        private bool enemiesFinishedMoving = true;
-
         public GameObject[] enemyPrefab;
+        public GameObject playerPrefab;
+
+        [HideInInspector]
         public BoardManager boardManager;
-        List<GameObject> enemiesList;
+
+        List<ExplorationEnemy> enemiesList;
+        private ExplorationPlayer playerScript;
+
+        private bool enemiesMoving, playerMoving;
 
         private Transform enemiesParent;
 
         // Use this for initialization
         void Awake()
         {
-            boardManager = GetComponent<BoardManager>();
-            playersTurn = true;
-            enemiesTurn = false;            
-            enemiesList = new List<GameObject>();
+            boardManager = GetComponent<BoardManager>();               
+            enemiesList = new List<ExplorationEnemy>();
+            enemiesMoving = false;
+            playerMoving = false;
             InitExploration();
+            explorationState = ExplorationStateEnum.PlayersTurn;
             
         }
 
@@ -46,7 +51,7 @@ namespace BraveNewWorld
                     GameObject enemy = Instantiate(enemyPrefab[Random.Range(0, enemyPrefab.Length)], new Vector2((int)randomPos.x, (int)randomPos.y), Quaternion.identity) as GameObject;
                     enemy.transform.parent = enemiesParent;
                     boardManager.board[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
-                    enemiesList.Add(enemy);
+                    enemiesList.Add(enemy.GetComponent<ExplorationEnemy>());
                     quantity--;
                 }
              
@@ -55,44 +60,81 @@ namespace BraveNewWorld
 
         void InitExploration()
         {
-            boardManager.BoardSetUp(boardSize, obstaclesQuantitity);            
+            GameObject player = Instantiate(playerPrefab, new Vector3(1, 1, 0), Quaternion.identity) as GameObject;
+
+            playerScript = player.GetComponent<ExplorationPlayer>();
+
+            Camera.main.GetComponent<CameraMovement>().target = player.transform;
+
+            boardManager.BoardSetUp(boardSize, obstaclesQuantitity); 
+                       
             SetEnemies(enemiesQty);
         }
 
         void Update()
         {
-            if (!playersTurn && !enemiesMoving)
+            switch(explorationState)
             {
-               MoveEnemies();
-            }
-            else if (!playersTurn && enemiesMoving)
-            {
-                foreach (GameObject enemy in enemiesList)
-                {
-                    if (!enemy.GetComponent<ExplorationEnemy>().finishedMoving)
+                
+                case (ExplorationStateEnum.PlayersTurn):
+                    if (!playerMoving)
                     {
-                        enemiesMoving = true;                      
-                        return;
-                    }                    
-                }                
-                enemiesFinishedMoving = true;
-                enemiesMoving = false;
-            }
-
-            if (!playersTurn && enemiesFinishedMoving)
-            {   
-                playersTurn = true;
-            }
+                        playerScript.BeginTurn();
+                        playerMoving = true;
+                    }
+                    else if(playerScript.finishedMoving)
+                    {                        
+                        NextTurn();
+                    }
+                    break;
+                case (ExplorationStateEnum.EnemiesTurn):
+                    if (!enemiesMoving) {
+                        //Debug.Log("update enemies turn");
+						enemiesMoving = true;    
+						StartCoroutine(MoveEnemies());                        
+                    }
+                    break;
+                default:
+                    break;
+                
+            }            
         }
 
-        void MoveEnemies()
+        IEnumerator MoveEnemies()
         {
-            enemiesMoving = true;
-            enemiesFinishedMoving = false;
-            foreach(GameObject enemy in enemiesList)
+            int enemyIndex = 0;
+            while (enemyIndex < enemiesList.Count)
             {
-                enemy.GetComponent<ExplorationEnemy>().Move();
-            }     
+                enemiesList[enemyIndex].Move();
+                while (enemiesList[enemyIndex].finishedMoving != true)
+                {
+                    yield return null; // wait until next frame
+                }
+
+                enemyIndex++;
+            }
+
+            NextTurn();                        
+        }        
+
+        public void NextTurn()
+        {
+            switch (explorationState)
+            {
+                case (ExplorationStateEnum.PlayersTurn):
+                    playerMoving = false;
+                    explorationState = ExplorationStateEnum.EnemiesTurn;
+                    //Debug.Log("from Player Turn to Enemies Turn");
+                    break;
+                case (ExplorationStateEnum.EnemiesTurn):
+                    enemiesMoving = false;
+                    explorationState = ExplorationStateEnum.PlayersTurn;
+                    //Debug.Log("from Enemies Turn to Player Turn");
+                    break;
+                default:
+                    break;
+
+            }
         }
     }
 }

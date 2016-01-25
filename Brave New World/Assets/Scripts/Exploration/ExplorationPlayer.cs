@@ -6,12 +6,12 @@ namespace BraveNewWorld
 {
     public class ExplorationPlayer : ExplorationMovableObject
     {
-        // Use this for initialization
         new void Awake()
         {
             base.Awake();
             transform.position = new Vector3(1, 1, transform.position.z);            
-            showMyPossibleMovement = true;
+            //showMyPossibleMovement = true;
+            finishedMoving = false;
             possibleMovement = new List<Vector2>();
 
         }
@@ -19,48 +19,30 @@ namespace BraveNewWorld
         //TODO Take this out from update so the manager gains more control over the turn
         void Update()
         {
-            if (!explorationManager.playersTurn)
+            if (explorationManager.explorationState == ExplorationStateEnum.PlayersTurn)            
             {
-                if (movementParent != null)
+                if (!isMoving && !finishedMoving)
                 {
-                    Destroy(movementParent.gameObject);
-                }
-                return;
-            }
-            else
-            {
-                if (!isMoving)
-                {
-                    if (!showedPossibleMovements)
-                    {
-                        showedPossibleMovements = true;                        
-                        PossibleMovement();
-                    }
-
                     if (Input.GetMouseButtonDown(0))
                     {
-
                         GameObject clickedObj = ClickSelect();
 
                         if (clickedObj != null && clickedObj.tag == "MovableArea")
-                        {
-                            path.Clear();
-                            path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
-                            //Debug.Log("Should be moving");
+                        {                            
+                            path = new List<Tile>();
+                            path = pathFinding.FindPath(transform.position, clickedObj.transform.position);                                                       
                             Move();
-                            Destroy(movementParent.gameObject);
-                            showedPossibleMovements = false;                            
+                            Destroy(movementParent.gameObject);                            
                             //explorationManager.boardManager.ShowPath();                    
                         }
-
                     }
                 }
-                else
-                {
-                    explorationManager.playersTurn = false;
-                    Debug.Log("Finished moving");
-                }
             }
+        }
+
+        public void BeginTurn()
+        {            
+            PossibleMovement();
         }
 
         //This method returns the game object that was clicked using Raycast 2D

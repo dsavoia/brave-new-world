@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -22,15 +23,14 @@ namespace BraveNewWorld
 
         protected Pathfinding pathFinding;
 
-        protected bool isMoving = false;
+        public bool isMoving = false;
         public bool finishedMoving = true;
 
-        public float movementDuration;
+        public float movementSpeed;
 
         protected void Awake()
         {
-            path = new List<Tile>();
-            showedPossibleMovements = false;
+            path = new List<Tile>();            
             possibleMovement = new List<Vector2>();
             explorationManager = GameObject.Find("ExplorationManager").GetComponent<ExplorationSceneManager>();
             pathFinding =  GameObject.Find("Pathfinding").GetComponent<Pathfinding>();
@@ -60,12 +60,12 @@ namespace BraveNewWorld
                         }
                     }
                 }
-            }
+            }            
         }
 
         protected void PossibleMovement()
         {
-            possibleMovement.Clear();
+            possibleMovement = new List<Vector2>();
             CalculatePossiblePosition(movementRange, transform.position);
 
             if (showMyPossibleMovement)
@@ -83,35 +83,41 @@ namespace BraveNewWorld
                     instance.transform.SetParent(movementParent);
                 }
             }
+
+            finishedMoving = false;
         }
 
         public void Move()
-        {
-            
+        {            
             Vector3[] pathToFollow = new Vector3[path.Count];
             for (int i = 0; i < path.Count; i++)
             {
                 pathToFollow[i] = new Vector3(path[i].position.x, path[i].position.y);
-                /*if (explorationManager.boardManager.board[(int)pathToFollow[i].x, (int)pathToFollow[i].y].isOccupied)
-                {
-                    Debug.Log("errr");
-                }*/
             }
 
             isMoving = true;
-            finishedMoving = false;
-            explorationManager.boardManager.board[(int)transform.position.x, (int)transform.position.y].isOccupied = false;
-            explorationManager.boardManager.board[(int)path[path.Count-1].position.x, (int)path[path.Count-1].position.y].isOccupied = true;
 
-            transform.DOLocalPath(pathToFollow, path.Count/1.5f).OnComplete(() => FinishMovement());
+            if (pathToFollow.Length > 0) {
+                explorationManager.boardManager.board[(int)transform.position.x, (int)transform.position.y].isOccupied = false;
+                explorationManager.boardManager.board[(int)pathToFollow[pathToFollow.Length - 1].x, (int)pathToFollow[pathToFollow.Length - 1].y].isOccupied = true;
+                transform.DOPath(pathToFollow, path.Count / (movementSpeed == 0 ? 1 : movementSpeed), PathType.Linear, PathMode.Sidescroller2D, 0).OnComplete(() => EndTurn());
+            }
+            else
+            {
+                Debug.Log("Would've bugged");
+                EndTurn();
+            }					
         }
-
-        void FinishMovement()
+        
+        void EndTurn()
         {
-            //Debug.Log("finished moving");
             isMoving = false;
-            finishedMoving = true;            
-        }
+            finishedMoving = true;
+            if (movementParent != null)
+            {
+                Destroy(movementParent.gameObject);
+            }
+        }        
     }
 }
 

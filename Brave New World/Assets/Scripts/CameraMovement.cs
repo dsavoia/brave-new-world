@@ -4,8 +4,9 @@ namespace BraveNewWorld
 {
     public class CameraMovement : MonoBehaviour
     {
-
+        [HideInInspector]
         public Transform target;
+
         ExplorationSceneManager explorationManager;
 
         Camera cam;
