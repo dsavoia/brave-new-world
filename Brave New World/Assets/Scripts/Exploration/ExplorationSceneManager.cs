@@ -25,6 +25,12 @@ namespace BraveNewWorld
 
         private Transform enemiesParent;
 
+        public GameObject addHourText;
+        public GameObject enemiesTurnText;
+
+        [HideInInspector]
+        public PassOneHour passOneHour;
+
         // Use this for initialization
         void Awake()
         {
@@ -35,6 +41,9 @@ namespace BraveNewWorld
             InitExploration();
             explorationState = ExplorationStateEnum.PlayersTurn;
             
+            passOneHour = addHourText.GetComponent<PassOneHour>();
+
+
         }
 
         void SetEnemies(int quantity)
@@ -53,8 +62,7 @@ namespace BraveNewWorld
                     boardManager.board[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
                     enemiesList.Add(enemy.GetComponent<ExplorationEnemy>());
                     quantity--;
-                }
-             
+                }             
             }
         }
 
@@ -122,13 +130,16 @@ namespace BraveNewWorld
             switch (explorationState)
             {
                 case (ExplorationStateEnum.PlayersTurn):
-                    playerMoving = false;
+                    playerMoving = false;                    
                     explorationState = ExplorationStateEnum.EnemiesTurn;
+                    enemiesTurnText.gameObject.SetActive(true);
                     //Debug.Log("from Player Turn to Enemies Turn");
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
                     enemiesMoving = false;
                     explorationState = ExplorationStateEnum.PlayersTurn;
+                    addHourText.gameObject.SetActive(true);
+                    enemiesTurnText.gameObject.SetActive(false);
                     //Debug.Log("from Enemies Turn to Player Turn");
                     break;
                 default:
@@ -136,5 +147,8 @@ namespace BraveNewWorld
 
             }
         }
+
+        
+
     }
 }
