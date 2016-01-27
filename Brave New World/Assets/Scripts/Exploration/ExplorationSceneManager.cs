@@ -5,35 +5,60 @@ using System.Collections.Generic;
 namespace BraveNewWorld
 {
     public class ExplorationSceneManager : MonoBehaviour
-    {     
+    {
+
+        private static ExplorationSceneManager _instance;
 
         public ExplorationStateEnum explorationState;
-
         public Vector2 boardSize;
         public int obstaclesQuantitity, enemiesQty;
-
         public GameObject[] enemyPrefab;
         public GameObject playerPrefab;
-
         [HideInInspector]
         public BoardManager boardManager;
-
         List<ExplorationEnemy> enemiesList;
         private ExplorationPlayer playerScript;
-
         private bool enemiesMoving, playerMoving;
-
         private Transform enemiesParent;
-
         public GameObject addHourText;
         public GameObject enemiesTurnText;
-
+        [HideInInspector]
+        public int hours;
         [HideInInspector]
         public PassOneHour passOneHour;
+
+        public static ExplorationSceneManager instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = GameObject.FindObjectOfType<ExplorationSceneManager>();
+
+                    DontDestroyOnLoad(_instance.gameObject);
+                }
+
+                return _instance;
+            }
+        }
 
         // Use this for initialization
         void Awake()
         {
+
+            if (_instance == null)
+            {
+                _instance = this;
+                DontDestroyOnLoad(this);
+
+            }
+            else
+            {
+                if (this != _instance)
+                    Destroy(this.gameObject);
+            }
+                        
+            hours = 8;
             boardManager = GetComponent<BoardManager>();               
             enemiesList = new List<ExplorationEnemy>();
             enemiesMoving = false;
@@ -105,7 +130,8 @@ namespace BraveNewWorld
                 default:
                     break;
                 
-            }            
+            }           
+                        
         }
 
         IEnumerator MoveEnemies()
@@ -147,8 +173,5 @@ namespace BraveNewWorld
 
             }
         }
-
-        
-
     }
 }

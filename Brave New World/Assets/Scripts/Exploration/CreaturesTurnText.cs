@@ -2,24 +2,29 @@
 using System.Collections;
 using DG.Tweening;
 
-public class CreaturesTurnText : MonoBehaviour {
-
-    Transform playerTransform;    
-    public float animationSpeed;
-    public float xSize;
-
-    void Awake()
+namespace BraveNewWorld
+{
+    public class CreaturesTurnText : MonoBehaviour
     {
-        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;        
-    }
 
-    void OnEnable()
-    {        
-        transform.position = playerTransform.position;        
-    }
+        Transform playerTransform;
+        public float animationSpeed;
+        public float xSize;
 
-    void Update()
-    {
-        transform.DOScaleX(xSize, animationSpeed).OnComplete(() => { transform.DOScaleX(1, animationSpeed); });
+        void Awake()
+        {
+            playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+        }
+
+        void OnEnable()
+        {
+            transform.position = playerTransform.position;
+        }
+
+        void Update()
+        {
+            transform.DOScaleX(xSize, animationSpeed).OnComplete(() => { transform.DOScaleX(1, animationSpeed); });
+        }
     }
 }
+

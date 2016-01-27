@@ -7,18 +7,10 @@ namespace BraveNewWorld
 
     public class Pathfinding : MonoBehaviour
     {
-
-        ExplorationSceneManager explorationManager;
-
         //public Transform seeker, target;
 
         public GameObject pathPrefab;
-        private Transform pathParent;
-
-        void Awake()
-        {
-            explorationManager = GameObject.Find("ExplorationManager").GetComponent<ExplorationSceneManager>();
-        }
+        private Transform pathParent;        
 
         void Update()
         {
@@ -35,8 +27,8 @@ namespace BraveNewWorld
             //Debug.Log(startPos);
             //Debug.Log(targetPos);
 
-            Tile startTile = explorationManager.boardManager.board[(int)startPos.x, (int)startPos.y];
-            Tile targetTile = explorationManager.boardManager.board[(int)targetPos.x, (int)targetPos.y]; ;
+            Tile startTile = ExplorationSceneManager.instance.boardManager.board[(int)startPos.x, (int)startPos.y];
+            Tile targetTile = ExplorationSceneManager.instance.boardManager.board[(int)targetPos.x, (int)targetPos.y]; ;
 
             List<Tile> openSet = new List<Tile>();
             HashSet<Tile> closedSet = new HashSet<Tile>();
@@ -62,7 +54,7 @@ namespace BraveNewWorld
                     return RetracePath(startTile, targetTile);                    
                 }
 
-                foreach (Tile neighbour in explorationManager.boardManager.GetNeighbours(currentTile))
+                foreach (Tile neighbour in ExplorationSceneManager.instance.boardManager.GetNeighbours(currentTile))
                 {
                     if (neighbour.isOccupied || closedSet.Contains(neighbour))
                     {

@@ -1,12 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <ProjectGuid>{A5CCE919-1329-66CE-B6F5-68DD86B577C0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -46,50 +45,63 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Completed\Scripts\BoardManager.cs" />
-    <Compile Include="Assets\Completed\Scripts\Enemy.cs" />
-    <Compile Include="Assets\Completed\Scripts\GameManager.cs" />
-    <Compile Include="Assets\Completed\Scripts\Loader.cs" />
-    <Compile Include="Assets\Completed\Scripts\MovingObject.cs" />
-    <Compile Include="Assets\Completed\Scripts\Player.cs" />
-    <Compile Include="Assets\Completed\Scripts\SoundManager.cs" />
-    <Compile Include="Assets\Completed\Scripts\Wall.cs" />
-    <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />
-    <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />
-    <Compile Include="Assets\Scripts\CameraMovement.cs" />
-    <Compile Include="Assets\Scripts\Exploration\BoardManager.cs" />
-    <Compile Include="Assets\Scripts\Exploration\CreaturesTurnText.cs" />
-    <Compile Include="Assets\Scripts\Exploration\ExplorationEnemy.cs" />
-    <Compile Include="Assets\Scripts\Exploration\ExplorationMovableObject.cs" />
-    <Compile Include="Assets\Scripts\Exploration\ExplorationPlayer.cs" />
-    <Compile Include="Assets\Scripts\Exploration\ExplorationSceneManager.cs" />
-    <Compile Include="Assets\Scripts\Exploration\ExplorationStateEnum.cs" />
-    <Compile Include="Assets\Scripts\Exploration\HourText.cs" />
-    <Compile Include="Assets\Scripts\Exploration\PassOneHour.cs" />
-    <Compile Include="Assets\Scripts\Exploration\Tile.cs" />
-    <Compile Include="Assets\Scripts\Exploration\TileTypeEnum.cs" />
-    <Compile Include="Assets\Scripts\GameManager.cs" />
-    <Compile Include="Assets\Scripts\GameStatesEnum.cs" />
-    <Compile Include="Assets\Scripts\Pathfinding.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\BoardManager1.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\Enemy.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\GameManager1.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\Loader.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\MovingObject.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\Player.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\SoundManager.cs" />
-    <Compile Include="Assets\Scripts\Tutorial Version\Wall.cs" />
-    <None Include="Assets\Demigiant\DOTween\readme.txt" />
-    <None Include="Assets\Fonts\OFL.txt" />
-    <Reference Include="UnityEngine.UI">
-      <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="DOTween">
-      <HintPath>C:/Desenvolvimento/Brave New World/src/Brave New World/Assets/Demigiant/DOTween/DOTween.dll</HintPath>
-    </Reference>
+     <Compile Include="Assets\Completed\Scripts\BoardManager.cs" />
+     <Compile Include="Assets\Completed\Scripts\Enemy.cs" />
+     <Compile Include="Assets\Completed\Scripts\GameManager.cs" />
+     <Compile Include="Assets\Completed\Scripts\Loader.cs" />
+     <Compile Include="Assets\Completed\Scripts\MovingObject.cs" />
+     <Compile Include="Assets\Completed\Scripts\Player.cs" />
+     <Compile Include="Assets\Completed\Scripts\SoundManager.cs" />
+     <Compile Include="Assets\Completed\Scripts\Wall.cs" />
+     <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />
+     <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />
+     <Compile Include="Assets\Scripts\CameraMovement.cs" />
+     <Compile Include="Assets\Scripts\Exploration\BoardManager.cs" />
+     <Compile Include="Assets\Scripts\Exploration\CreaturesTurnText.cs" />
+     <Compile Include="Assets\Scripts\Exploration\DayAndNight.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationEnemy.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationMovableObject.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationPlayer.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationSceneManager.cs" />
+     <Compile Include="Assets\Scripts\Exploration\ExplorationStateEnum.cs" />
+     <Compile Include="Assets\Scripts\Exploration\HourText.cs" />
+     <Compile Include="Assets\Scripts\Exploration\PassOneHour.cs" />
+     <Compile Include="Assets\Scripts\Exploration\Tile.cs" />
+     <Compile Include="Assets\Scripts\Exploration\TileTypeEnum.cs" />
+     <Compile Include="Assets\Scripts\GameManager.cs" />
+     <Compile Include="Assets\Scripts\GameStatesEnum.cs" />
+     <Compile Include="Assets\Scripts\Pathfinding.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\BoardManager1.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\Enemy.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\GameManager1.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\Loader.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\MovingObject.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\Player.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\SoundManager.cs" />
+     <Compile Include="Assets\Scripts\Tutorial Version\Wall.cs" />
+     <None Include="Assets\Demigiant\DOTween\readme.txt" />
+     <None Include="Assets\Fonts\OFL.txt" />
+     <None Include="Assets\Demigiant\DOTween\DOTween46.xml" />
+     <None Include="Assets\Demigiant\DOTween\DOTween43.xml" />
+     <None Include="Assets\Demigiant\DOTween\DOTween50.xml" />
+ <Reference Include="UnityEngine.UI">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Networking">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTween">
+ <HintPath>C:/Desenvolvimento/Brave New World/src/Brave New World/Assets/Demigiant/DOTween/DOTween.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTween43">
+ <HintPath>C:/Desenvolvimento/Brave New World/src/Brave New World/Assets/Demigiant/DOTween/DOTween43.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTween50">
+ <HintPath>C:/Desenvolvimento/Brave New World/src/Brave New World/Assets/Demigiant/DOTween/DOTween50.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTween46">
+ <HintPath>C:/Desenvolvimento/Brave New World/src/Brave New World/Assets/Demigiant/DOTween/DOTween46.dll</HintPath>
+ </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -99,4 +111,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  
 </Project>

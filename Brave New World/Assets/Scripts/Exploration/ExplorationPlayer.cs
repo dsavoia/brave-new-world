@@ -19,7 +19,7 @@ namespace BraveNewWorld
         //TODO Take this out from update so the manager gains more control over the turn
         void Update()
         {
-            if (explorationManager.explorationState == ExplorationStateEnum.PlayersTurn)            
+            if (ExplorationSceneManager.instance.explorationState == ExplorationStateEnum.PlayersTurn)            
             {
                 if (!isMoving && !finishedMoving)
                 {

@@ -9,8 +9,7 @@ using DG.Tweening;
 namespace BraveNewWorld
 {
     public class ExplorationMovableObject : MonoBehaviour
-    {
-        protected ExplorationSceneManager explorationManager;
+    {        
         protected List<Vector2> possibleMovement;
         protected Transform movementParent;
         protected List<Tile> path;
@@ -31,8 +30,7 @@ namespace BraveNewWorld
         protected void Awake()
         {
             path = new List<Tile>();            
-            possibleMovement = new List<Vector2>();
-            explorationManager = GameObject.Find("ExplorationManager").GetComponent<ExplorationSceneManager>();
+            possibleMovement = new List<Vector2>();            
             pathFinding =  GameObject.Find("Pathfinding").GetComponent<Pathfinding>();
         }
 
@@ -47,10 +45,10 @@ namespace BraveNewWorld
                 {
                     if (Mathf.Abs(i) == Mathf.Abs(j))
                         continue;
-                    if (((int)pos.x + i > 0 && (int)pos.x + i < explorationManager.boardManager.boardSize.x) &&
-                    ((int)pos.y + j > 0 && (int)pos.y + j < explorationManager.boardManager.boardSize.y))
+                    if (((int)pos.x + i > 0 && (int)pos.x + i < ExplorationSceneManager.instance.boardManager.boardSize.x) &&
+                    ((int)pos.y + j > 0 && (int)pos.y + j < ExplorationSceneManager.instance.boardManager.boardSize.y))
                     {
-                        if (!explorationManager.boardManager.board[(int)pos.x + i, (int)pos.y + j].isOccupied)
+                        if (!ExplorationSceneManager.instance.boardManager.board[(int)pos.x + i, (int)pos.y + j].isOccupied)
                         {
                             if (!possibleMovement.Contains(new Vector2(pos.x, pos.y)))
                             {
@@ -73,7 +71,7 @@ namespace BraveNewWorld
                 //Debug.Log(gameObject.name + " Showed possible movement");
                 
                 movementParent = new GameObject(gameObject.name + " MovementParent").transform;
-                movementParent.transform.SetParent(explorationManager.boardManager.boardParent);
+                movementParent.transform.SetParent(ExplorationSceneManager.instance.boardManager.boardParent);
                 //EditorApplication.isPaused = true;
                 GameObject instance;               
 
@@ -98,8 +96,8 @@ namespace BraveNewWorld
             isMoving = true;
 
             if (pathToFollow.Length > 0) {
-                explorationManager.boardManager.board[(int)transform.position.x, (int)transform.position.y].isOccupied = false;
-                explorationManager.boardManager.board[(int)pathToFollow[pathToFollow.Length - 1].x, (int)pathToFollow[pathToFollow.Length - 1].y].isOccupied = true;
+                ExplorationSceneManager.instance.boardManager.board[(int)transform.position.x, (int)transform.position.y].isOccupied = false;
+                ExplorationSceneManager.instance.boardManager.board[(int)pathToFollow[pathToFollow.Length - 1].x, (int)pathToFollow[pathToFollow.Length - 1].y].isOccupied = true;
                 transform.DOPath(pathToFollow, path.Count / (movementSpeed == 0 ? 1 : movementSpeed), PathType.Linear, PathMode.Sidescroller2D, 0).OnComplete(() => EndTurn());
             }
             else
