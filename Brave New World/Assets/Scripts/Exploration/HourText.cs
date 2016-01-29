@@ -9,14 +9,12 @@ namespace BraveNewWorld
     {
 
         Text hourText;
-
-        // Use this for initialization
+        
         void Awake()
         {
             hourText = GetComponent<Text>();
         }
-
-        // Update is called once per frame
+        
         void Update()
         {
             hourText.text = ExplorationSceneManager.instance.hours + ":00";            

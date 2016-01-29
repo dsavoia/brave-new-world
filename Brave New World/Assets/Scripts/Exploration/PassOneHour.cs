@@ -16,8 +16,7 @@ namespace BraveNewWorld
 
         public float animationSpeed;
         public int yDistance;
-
-        // Use this for initialization
+        
         void Awake()
         {
             playerTransform = GameObject.FindGameObjectWithTag("Player").transform;

@@ -8,29 +8,33 @@ namespace BraveNewWorld
         public TileTypeEnum tileType;
         public bool isOccupied { get; set; }
 
-        public GameObject tile;
+        //public GameObject tile;
 
         public int gCost;
         public int hCost;
         public Tile parent;
 
-        public Tile(TileTypeEnum _tileType, GameObject tilePrefab, Vector2 _tilePosition)
+        public Tile(TileTypeEnum _tileType, Vector2 _tilePosition)
         {
-            tileType = _tileType;
-            tile = tilePrefab;
+            tileType = _tileType;            
             position = _tilePosition;
 
-            switch (tileType)
+            /*switch (tileType)
             {
-                case TileTypeEnum.OutterWall:
-                case TileTypeEnum.Obstacles:
+                case TileTypeEnum.IndestructibleWall:
+                case TileTypeEnum.Wall:
                     isOccupied = true;
                     break;
                 default:
                     isOccupied = false;
                     break;
-            }
+            }*/
         }
+
+        /*public void SetTile(GameObject tilePrefab)
+        {
+            tile = tilePrefab;
+        } */      
 
         public int fCost
         {

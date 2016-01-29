@@ -6,29 +6,16 @@ namespace BraveNewWorld
 {
 
     public class Pathfinding : MonoBehaviour
-    {
-        //public Transform seeker, target;
+    {        
 
         public GameObject pathPrefab;
-        private Transform pathParent;        
-
-        void Update()
-        {
-            //if (Input.GetMouseButtonDown(0))
-            //{
-                //FindPath(seeker.position, target.position);
-            //}
-
-        }
+        private Transform pathParent;                
 
         public List<Tile> FindPath(Vector3 startPos, Vector3 targetPos)
-        {
-            //Debug.Log("Calculating Path");
-            //Debug.Log(startPos);
-            //Debug.Log(targetPos);
+        {       
 
-            Tile startTile = ExplorationSceneManager.instance.boardManager.board[(int)startPos.x, (int)startPos.y];
-            Tile targetTile = ExplorationSceneManager.instance.boardManager.board[(int)targetPos.x, (int)targetPos.y]; ;
+            Tile startTile = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)startPos.x, (int)startPos.y];
+            Tile targetTile = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)targetPos.x, (int)targetPos.y]; ;
 
             List<Tile> openSet = new List<Tile>();
             HashSet<Tile> closedSet = new HashSet<Tile>();
@@ -54,7 +41,7 @@ namespace BraveNewWorld
                     return RetracePath(startTile, targetTile);                    
                 }
 
-                foreach (Tile neighbour in ExplorationSceneManager.instance.boardManager.GetNeighbours(currentTile))
+                foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(currentTile))
                 {
                     if (neighbour.isOccupied || closedSet.Contains(neighbour))
                     {
@@ -93,9 +80,6 @@ namespace BraveNewWorld
             path.Reverse();
 
             return path;
-            //ShowPath(path);
-            //Debug.Log(path.ToArray());
-
         }
 
         int GetDistance(Tile tileA, Tile tileB)
@@ -112,25 +96,5 @@ namespace BraveNewWorld
             return 14 * dstX + 10 * (dstY - dstX);*/
 
         }       
-
-        /*void ShowPath(List<Tile> finalPath)
-        {
-            if (pathParent != null)
-                Destroy(pathParent.gameObject);
-
-            pathParent = new GameObject("PathParent").transform;
-            pathParent.transform.SetParent(explorationManager.boardManager.boardParent);
-
-            GameObject instance;
-
-            for (int i = 0; i < finalPath.Count; i++)
-            {
-                instance = Instantiate(pathPrefab, finalPath[i].position, Quaternion.identity) as GameObject;
-                instance.transform.SetParent(pathParent);
-            }
-
-            //showedPossibleMovements = true;
-        }*/
-
     }
 }

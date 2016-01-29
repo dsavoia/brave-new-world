@@ -59,6 +59,9 @@
      <Compile Include="Assets\Scripts\Exploration\BoardManager.cs" />
      <Compile Include="Assets\Scripts\Exploration\CreaturesTurnText.cs" />
      <Compile Include="Assets\Scripts\Exploration\DayAndNight.cs" />
+     <Compile Include="Assets\Scripts\Exploration\Dungeon.cs" />
+     <Compile Include="Assets\Scripts\Exploration\DungeonGenerator.cs" />
+     <Compile Include="Assets\Scripts\Exploration\DungeonManager.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationEnemy.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationMovableObject.cs" />
      <Compile Include="Assets\Scripts\Exploration\ExplorationPlayer.cs" />

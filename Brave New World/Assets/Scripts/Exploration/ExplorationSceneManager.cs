@@ -10,12 +10,13 @@ namespace BraveNewWorld
         private static ExplorationSceneManager _instance;
 
         public ExplorationStateEnum explorationState;
-        public Vector2 boardSize;
+        //public Vector2 boardSize;
         public int obstaclesQuantitity, enemiesQty;
         public GameObject[] enemyPrefab;
         public GameObject playerPrefab;
         [HideInInspector]
-        public BoardManager boardManager;
+        //public BoardManager boardManager;
+        public DungeonManager dungeonManager;
         List<ExplorationEnemy> enemiesList;
         private ExplorationPlayer playerScript;
         private bool enemiesMoving, playerMoving;
@@ -41,8 +42,7 @@ namespace BraveNewWorld
                 return _instance;
             }
         }
-
-        // Use this for initialization
+        
         void Awake()
         {
 
@@ -59,7 +59,7 @@ namespace BraveNewWorld
             }
                         
             hours = 8;
-            boardManager = GetComponent<BoardManager>();               
+            dungeonManager = GetComponent<DungeonManager>();               
             enemiesList = new List<ExplorationEnemy>();
             enemiesMoving = false;
             playerMoving = false;
@@ -71,38 +71,37 @@ namespace BraveNewWorld
 
         }
 
+        void InitExploration()
+        {
+            dungeonManager.BuildMap();
+
+            Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
+            Debug.Log(dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].position);
+            GameObject player = Instantiate(playerPrefab, playerInitialPos, Quaternion.identity) as GameObject;
+            playerScript = player.GetComponent<ExplorationPlayer>();
+            Camera.main.GetComponent<CameraMovement>().target = player.transform;
+            SetEnemies(enemiesQty);
+        }
+
         void SetEnemies(int quantity)
         {
             Vector2 randomPos;            
 
             enemiesParent = new GameObject("EnemiesParent").transform;
-            enemiesParent.parent = boardManager.boardParent;
+            enemiesParent.parent = dungeonManager.map.transform;
 
             while (quantity > 0) {
-                randomPos = new Vector2(Random.Range(1,boardSize.x), Random.Range(1, boardSize.y));
-                if ((randomPos.x != 1 && randomPos.y != 1) && !boardManager.board[(int)randomPos.x, (int)randomPos.y].isOccupied)
+                randomPos = dungeonManager.dungeon.FloorCoords[Random.Range(0, dungeonManager.dungeon.FloorCoords.Count)];
+                if ((randomPos.x != 1 && randomPos.y != 1) && !dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied)
                 {
                     GameObject enemy = Instantiate(enemyPrefab[Random.Range(0, enemyPrefab.Length)], new Vector2((int)randomPos.x, (int)randomPos.y), Quaternion.identity) as GameObject;
                     enemy.transform.parent = enemiesParent;
-                    boardManager.board[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
+                    dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
                     enemiesList.Add(enemy.GetComponent<ExplorationEnemy>());
                     quantity--;
                 }             
             }
-        }
-
-        void InitExploration()
-        {
-            GameObject player = Instantiate(playerPrefab, new Vector3(1, 1, 0), Quaternion.identity) as GameObject;
-
-            playerScript = player.GetComponent<ExplorationPlayer>();
-
-            Camera.main.GetComponent<CameraMovement>().target = player.transform;
-
-            boardManager.BoardSetUp(boardSize, obstaclesQuantitity); 
-                       
-            SetEnemies(enemiesQty);
-        }
+        }       
 
         void Update()
         {
@@ -121,8 +120,7 @@ namespace BraveNewWorld
                     }
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
-                    if (!enemiesMoving) {
-                        //Debug.Log("update enemies turn");
+                    if (!enemiesMoving) {                        
 						enemiesMoving = true;    
 						StartCoroutine(MoveEnemies());                        
                     }
@@ -142,7 +140,7 @@ namespace BraveNewWorld
                 enemiesList[enemyIndex].Move();
                 while (enemiesList[enemyIndex].finishedMoving != true)
                 {
-                    yield return null; // wait until next frame
+                    yield return null;
                 }
 
                 enemyIndex++;
@@ -158,15 +156,13 @@ namespace BraveNewWorld
                 case (ExplorationStateEnum.PlayersTurn):
                     playerMoving = false;                    
                     explorationState = ExplorationStateEnum.EnemiesTurn;
-                    enemiesTurnText.gameObject.SetActive(true);
-                    //Debug.Log("from Player Turn to Enemies Turn");
+                    enemiesTurnText.gameObject.SetActive(true);                   
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
                     enemiesMoving = false;
                     explorationState = ExplorationStateEnum.PlayersTurn;
                     addHourText.gameObject.SetActive(true);
-                    enemiesTurnText.gameObject.SetActive(false);
-                    //Debug.Log("from Enemies Turn to Player Turn");
+                    enemiesTurnText.gameObject.SetActive(false);                    
                     break;
                 default:
                     break;

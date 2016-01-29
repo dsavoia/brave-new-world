@@ -9,6 +9,7 @@ namespace BraveNewWorld
     public class BoardManager : MonoBehaviour
     {
 
+        /*
         public GameObject[] obstaclesTiles;
         public GameObject[] outterWallTiles;
         public GameObject[] floorTiles;
@@ -143,5 +144,6 @@ namespace BraveNewWorld
                 instance.transform.SetParent(obstaclesParent);
             }
         }       
+        */
     }
 }

@@ -8,15 +8,13 @@ namespace BraveNewWorld
     {
         new void Awake()
         {
-            base.Awake();
-            transform.position = new Vector3(1, 1, transform.position.z);            
+            base.Awake();            
             //showMyPossibleMovement = true;
             finishedMoving = false;
             possibleMovement = new List<Vector2>();
 
         }
-
-        //TODO Take this out from update so the manager gains more control over the turn
+        
         void Update()
         {
             if (ExplorationSceneManager.instance.explorationState == ExplorationStateEnum.PlayersTurn)            
@@ -33,7 +31,6 @@ namespace BraveNewWorld
                             path = pathFinding.FindPath(transform.position, clickedObj.transform.position);                                                       
                             Move();
                             Destroy(movementParent.gameObject);                            
-                            //explorationManager.boardManager.ShowPath();                    
                         }
                     }
                 }
@@ -44,8 +41,7 @@ namespace BraveNewWorld
         {            
             PossibleMovement();
         }
-
-        //This method returns the game object that was clicked using Raycast 2D
+      
         GameObject ClickSelect()
         {
             //Converting Mouse Pos to 2D (vector2) World Pos
@@ -53,8 +49,7 @@ namespace BraveNewWorld
             RaycastHit2D hit = Physics2D.Raycast(rayPos, Vector2.zero, 0f);
 
             if (hit)
-            {
-                //Debug.Log(hit.transform.name);
+            {                
                 return hit.transform.gameObject;
             }
             else return null;

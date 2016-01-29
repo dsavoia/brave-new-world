@@ -30,7 +30,6 @@ namespace BraveNewWorld
 
         IEnumerator AnimateDayTimeChange()
         {
-            Debug.Log("Change day mask");
             Color color = gameObject.GetComponent<SpriteRenderer>().color;
 
             switch (ExplorationSceneManager.instance.hours)
@@ -38,31 +37,24 @@ namespace BraveNewWorld
                 case 0:
                 case 3:
                     gameObject.GetComponent<SpriteRenderer>().DOFade(0.58f, Time.deltaTime * fadeSpeed);
-                    Debug.Log("3");
                     break;
                 case 6:
                     gameObject.GetComponent<SpriteRenderer>().DOFade(0.35f, Time.deltaTime * fadeSpeed);
-                    Debug.Log("6");
                     break;
                 case 9:
                     gameObject.GetComponent<SpriteRenderer>().DOFade(0.18f, Time.deltaTime * fadeSpeed);
-                    Debug.Log("9");
                     break;
                 case 12:
                     gameObject.GetComponent<SpriteRenderer>().DOFade(0f, Time.deltaTime * fadeSpeed);
-                    Debug.Log("12");
                     break;
                 case 15:
-                    gameObject.GetComponent<SpriteRenderer>().DOFade(0.10f, Time.deltaTime * fadeSpeed);
-                    Debug.Log("15");
+                    gameObject.GetComponent<SpriteRenderer>().DOFade(0.15f, Time.deltaTime * fadeSpeed);
                     break;
                 case 18:
                     gameObject.GetComponent<SpriteRenderer>().DOFade(0.30f, Time.deltaTime * fadeSpeed);
-                    Debug.Log("18");
                     break;
                 case 21:
                     gameObject.GetComponent<SpriteRenderer>().DOFade(0.43f, Time.deltaTime * fadeSpeed);
-                    Debug.Log("21");
                     break;
                 default:
                     break;

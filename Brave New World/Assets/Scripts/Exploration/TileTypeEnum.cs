@@ -2,10 +2,12 @@
 {
     public enum TileTypeEnum
     {
-
-        OutterWall,
-        Obstacles,
-        Floor
+        IndestructibleWall,
+        //OutterWall,
+        Wall,
+        Door,        
+        Floor,
+        Empty
 
     }
 }
