@@ -76,7 +76,7 @@ namespace BraveNewWorld
             dungeonManager.BuildMap();
 
             Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
-            Debug.Log(dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].position);
+            //Debug.Log(dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].position);
             GameObject player = Instantiate(playerPrefab, playerInitialPos, Quaternion.identity) as GameObject;
             playerScript = player.GetComponent<ExplorationPlayer>();
             Camera.main.GetComponent<CameraMovement>().target = player.transform;
@@ -128,7 +128,8 @@ namespace BraveNewWorld
                 default:
                     break;
                 
-            }           
+            }            
+            
                         
         }
 
@@ -138,7 +139,7 @@ namespace BraveNewWorld
             while (enemyIndex < enemiesList.Count)
             {
                 enemiesList[enemyIndex].Move();
-                while (enemiesList[enemyIndex].finishedMoving != true)
+                while (!enemiesList[enemyIndex].finishedMoving)
                 {
                     yield return null;
                 }
