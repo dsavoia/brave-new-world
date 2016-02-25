@@ -78,6 +78,8 @@ namespace BraveNewWorld
             Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
             //Debug.Log(dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].position);
             GameObject player = Instantiate(playerPrefab, playerInitialPos, Quaternion.identity) as GameObject;
+            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
+            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = player;
             playerScript = player.GetComponent<ExplorationPlayer>();
             Camera.main.GetComponent<CameraMovement>().target = player.transform;
             SetEnemies(enemiesQty);
@@ -95,8 +97,10 @@ namespace BraveNewWorld
                 if ((randomPos.x != 1 && randomPos.y != 1) && !dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied)
                 {
                     GameObject enemy = Instantiate(enemyPrefab[Random.Range(0, enemyPrefab.Length)], new Vector2((int)randomPos.x, (int)randomPos.y), Quaternion.identity) as GameObject;
+                    enemy.name = "Enemy" + quantity;
                     enemy.transform.parent = enemiesParent;
                     dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
+                    dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].OccupyingObject = enemy;
                     enemiesList.Add(enemy.GetComponent<ExplorationEnemy>());
                     quantity--;
                 }             
