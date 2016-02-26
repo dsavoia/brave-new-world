@@ -57,10 +57,11 @@ namespace BraveNewWorld
                     //((int)pos.y + j > 0 && (int)pos.y + j < ExplorationSceneManager.instance.dungeonManager.dungeon.MapHeigth))
                     //{
                     //if (!ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x + i, (int)pos.y + j].isOccupied)
-                    if (ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].tileType == TileTypeEnum.Floor)
+                    if (ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].tileType == TileTypeEnum.Floor ||
+                        ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].tileType == TileTypeEnum.Door)
                         {
                             if (ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].isOccupied 
-                                && ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].OccupyingObject != gameObject
+                                && ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].OccupyingObject != transform.gameObject
                                 && !ObjectsArroundMe.Contains(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].OccupyingObject))
                             {
                                 ObjectsArroundMe.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].OccupyingObject);
@@ -124,12 +125,12 @@ namespace BraveNewWorld
             else
             {
                 //TODO: FIX THIS
-                Debug.Log("Would've bugged");
+                //Debug.Log("Would've bugged");
                 EndMovement();
             }					
         }
         
-        void EndMovement()
+        public virtual void EndMovement()
         {
             isMoving = false;
             finishedMoving = true;

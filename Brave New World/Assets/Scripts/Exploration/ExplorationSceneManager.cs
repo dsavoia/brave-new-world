@@ -110,17 +110,17 @@ namespace BraveNewWorld
         void Update()
         {
             switch(explorationState)
-            {
-                
+            {                
                 case (ExplorationStateEnum.PlayersTurn):
-                    if (!playerMoving)
+                    if (playerScript.characterState == ExplorationPlayer.CharacterState.WaitingNextTurn)
                     {
                         playerScript.BeginTurn();
-                        playerMoving = true;
+                        //playerMoving = true;
                     }
-                    else if(playerScript.finishedMoving)
+                    else if(playerScript.characterState == ExplorationPlayer.CharacterState.EndTurn)
                     {                        
                         NextTurn();
+                        playerScript.characterState = ExplorationPlayer.CharacterState.WaitingNextTurn;
                     }
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):

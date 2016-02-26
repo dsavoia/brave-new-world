@@ -22,7 +22,7 @@ namespace BraveNewWorld
 
             path.Clear();
             PossibleMovement();
-            path = pathFinding.FindPath(transform.position, possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)]);
+            path = pathFinding.FindPath(transform.position, transform.position);//possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)]);
             base.Move();
 
             //DEBUG REASON ONLY
