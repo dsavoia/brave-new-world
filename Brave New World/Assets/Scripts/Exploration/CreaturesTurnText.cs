@@ -13,7 +13,7 @@ namespace BraveNewWorld
 
         void Awake()
         {
-            playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+            playerTransform = GameObject.FindGameObjectWithTag("Character").transform;
         }
 
         void OnEnable()

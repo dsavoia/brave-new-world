@@ -8,16 +8,24 @@ using DG.Tweening;
 
 namespace BraveNewWorld
 {
-    public class ExplorationMovableObject : MonoBehaviour
+    public abstract class ExplorationMovableObject : MonoBehaviour
     {        
         protected List<Vector2> possibleMovement;
+        protected List<Vector2> occupiedPosList;
+        protected List<GameObject> objectsArroundMe;
+
         protected Transform movementParent;
         protected List<Tile> path;
 
         protected bool showMyPossibleMovement = true;
         protected bool showedPossibleMovements;
 
-        public GameObject movementHighlight;
+        public GameObject movementHighlightPB;
+        public GameObject enemiesHighLightPB;
+        protected Transform enemiesHighLightParent;
+
+        protected Animator animator;
+
         public int movementRange = 1;
 
         protected Pathfinding pathFinding;
@@ -25,87 +33,119 @@ namespace BraveNewWorld
         public bool isMoving = false;
         public bool finishedMoving = true;
 
-        public float movementSpeed;
-
-        protected List<GameObject> ObjectsArroundMe;
+        public float movementSpeed;       
 
         protected void Awake()
         {
             path = new List<Tile>();            
             possibleMovement = new List<Vector2>();
-            ObjectsArroundMe = new List<GameObject>();
+            occupiedPosList = new List<Vector2>();
+            objectsArroundMe = new List<GameObject>();
             pathFinding =  GameObject.Find("Pathfinding").GetComponent<Pathfinding>();
+            animator = GetComponent<Animator>();
         }
-
-
-        //TODO: MAKE A BETTER SOLUTION
-        protected void CalculatePossiblePosition(int steps, Vector2 pos)
+        
+        //TODO: HIGLIGHT PREFAB CLASS SO I CAN DIFFERENTIATE BETWEEN HIGHLIGHTS
+        protected void CalculatePossiblePosition(int range, Vector2 pos)
         {
-            if (steps < 0)
-                return;
+            Tile actualPos = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y];            
+            List<Vector2> openSet = new List<Vector2>();
+            List<Vector2> auxiliarSet = new List<Vector2>();           
 
-            for (int i = -1; i <= 1; i++)
+            //Adding first neighbours
+            foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(actualPos))
             {
-                for (int j = -1; j <= 1; j++)
+                if (neighbour.tileType == TileTypeEnum.Floor)
                 {
-                    if (Mathf.Abs(i) == Mathf.Abs(j))
-                        continue;                   
-
-                    //Debug.Log(gameObject.name + " verificando x: " + pos.x + " y: " + pos.y);
-                 
-                    //if (((int)pos.x + i > 0 && (int)pos.x + i < ExplorationSceneManager.instance.dungeonManager.dungeon.MapWidth) &&
-                    //((int)pos.y + j > 0 && (int)pos.y + j < ExplorationSceneManager.instance.dungeonManager.dungeon.MapHeigth))
-                    //{
-                    //if (!ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x + i, (int)pos.y + j].isOccupied)
-                    if (ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].tileType == TileTypeEnum.Floor ||
-                        ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].tileType == TileTypeEnum.Door)
-                        {
-                            if (ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].isOccupied 
-                                && ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].OccupyingObject != transform.gameObject
-                                && !ObjectsArroundMe.Contains(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].OccupyingObject))
-                            {
-                                ObjectsArroundMe.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y].OccupyingObject);
-                                //Debug.Log("Ta ocupado x: " + pos.x + " y: " + pos.y);
-                            }
-
-                            if (!possibleMovement.Contains(new Vector2(pos.x, pos.y)))
-                            {
-                                possibleMovement.Add(new Vector2(pos.x, pos.y));
-                            }
-                            CalculatePossiblePosition(steps - 1, new Vector2(pos.x + i, pos.y + j));
-                        }
-                    //}
+                    if (!neighbour.isOccupied)
+                    {
+                        openSet.Add(neighbour.position);
+                    }
+                    else
+                    {
+                        occupiedPosList.Add(neighbour.position);
+                    }
                 }
-            }            
+            }
+
+            for (int i = 0; i < range; i++)
+            {
+                foreach (Vector2 openSetPos in openSet)
+                {                    
+                    foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)openSetPos.x, (int)openSetPos.y]))
+                    {
+                        if (neighbour.tileType == TileTypeEnum.Floor && !auxiliarSet.Contains(neighbour.position))
+                        {
+                            if (!neighbour.isOccupied)
+                            {
+                                auxiliarSet.Add(neighbour.position);
+                            }
+                            else if (!occupiedPosList.Contains(neighbour.position))
+                            {
+                                occupiedPosList.Add(neighbour.position);
+                            }
+                        }
+                    }
+
+                    if (!possibleMovement.Contains(openSetPos))
+                    {
+                        possibleMovement.Add(openSetPos);
+                    }
+                }
+
+                openSet.Clear();
+
+                foreach (Vector2 auxiliarPos in auxiliarSet)
+                {
+                    openSet.Add(auxiliarPos);
+                }
+
+                auxiliarSet.Clear();                                
+            }
+
+            occupiedPosList.Remove(pos);
+
+            foreach (Vector2 occupiedPos in occupiedPosList)
+            {
+                objectsArroundMe.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)occupiedPos.x, (int)occupiedPos.y].OccupyingObject);
+            }
+
+            possibleMovement.Add(pos);
         }
 
         protected void PossibleMovement()
         {
             possibleMovement = new List<Vector2>();
-            ObjectsArroundMe.Clear();
+            objectsArroundMe.Clear();
+            occupiedPosList.Clear();
             CalculatePossiblePosition(movementRange, transform.position);
             //DEBUG REASON ONLY
-            foreach (GameObject go in ObjectsArroundMe)
+            /*foreach (GameObject go in ObjectsArroundMe)
             {
                 Debug.Log(" Inside " + gameObject.name + "'s area is: " + go.name);
-            }
+            }*/
 
             if (showMyPossibleMovement)
             {   
                 movementParent = new GameObject(gameObject.name + " MovementParent").transform;
                 movementParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
              
-                GameObject instance;               
+                GameObject instance;
+
+                if (occupiedPosList.Count > 0)
+                {
+                    HighLightEnemies();
+                }
 
                 for (int i = 0; i < possibleMovement.Count; i++)
                 {                    
-                    instance = Instantiate(movementHighlight, possibleMovement[i], Quaternion.identity) as GameObject;
+                    instance = Instantiate(movementHighlightPB, possibleMovement[i], Quaternion.identity) as GameObject;
                     instance.transform.SetParent(movementParent);
                 }
             }
 
             finishedMoving = false;
-        }
+        }       
 
         public void Move()
         {            
@@ -125,7 +165,7 @@ namespace BraveNewWorld
             else
             {
                 //TODO: FIX THIS
-                //Debug.Log("Would've bugged");
+                Debug.Log("Would've bugged");
                 EndMovement();
             }					
         }
@@ -134,10 +174,16 @@ namespace BraveNewWorld
         {
             isMoving = false;
             finishedMoving = true;
+
             if (movementParent != null)
             {
                 Destroy(movementParent.gameObject);
             }
+            if (enemiesHighLightParent != null)
+            {
+                Destroy(enemiesHighLightParent.gameObject);
+            }
+
         }
 
         public void ChangeOccupiedPosition(Vector2 posToOccupy)
@@ -146,7 +192,23 @@ namespace BraveNewWorld
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y].OccupyingObject = null;
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)posToOccupy.x, (int)posToOccupy.y].isOccupied = true;
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)posToOccupy.x, (int)posToOccupy.y].OccupyingObject = gameObject;
-        }        
+        }       
+
+        public abstract IEnumerator Attack(GameObject target);        
+        public abstract float TakeDamage(int damage);
+        
+        public virtual float Die()
+        {
+            ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y].isOccupied = false;
+            ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y].OccupyingObject = null;
+
+            return 0;
+        }
+
+        public abstract void HighLightEnemies();
+        public abstract void HighLightAllies();
+        public abstract void HighLightNeutrals();
+
     }
 }
 

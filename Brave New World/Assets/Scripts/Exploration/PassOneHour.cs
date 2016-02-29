@@ -19,7 +19,7 @@ namespace BraveNewWorld
         
         void Awake()
         {
-            playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+            playerTransform = GameObject.FindGameObjectWithTag("Character").transform;
             hourTextTransform = GameObject.Find("Hours").GetComponent<Transform>();
             dayAndNight = GameObject.Find("DayAndNightMask").GetComponent<DayAndNight>();
             text = GetComponent<Text>();

@@ -17,8 +17,8 @@ namespace BraveNewWorld
         [HideInInspector]
         //public BoardManager boardManager;
         public DungeonManager dungeonManager;
-        List<ExplorationEnemy> enemiesList;
-        private ExplorationPlayer playerScript;
+        List<ExplorationCreature> enemiesList;
+        private ExplorationCharacter playerScript;
         private bool enemiesMoving, playerMoving;
         private Transform enemiesParent;
         public GameObject addHourText;
@@ -60,7 +60,7 @@ namespace BraveNewWorld
                         
             hours = 8;
             dungeonManager = GetComponent<DungeonManager>();               
-            enemiesList = new List<ExplorationEnemy>();
+            enemiesList = new List<ExplorationCreature>();
             enemiesMoving = false;
             playerMoving = false;
             InitExploration();
@@ -80,7 +80,7 @@ namespace BraveNewWorld
             GameObject player = Instantiate(playerPrefab, playerInitialPos, Quaternion.identity) as GameObject;
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = player;
-            playerScript = player.GetComponent<ExplorationPlayer>();
+            playerScript = player.GetComponent<ExplorationCharacter>();
             Camera.main.GetComponent<CameraMovement>().target = player.transform;
             SetEnemies(enemiesQty);
         }
@@ -101,7 +101,7 @@ namespace BraveNewWorld
                     enemy.transform.parent = enemiesParent;
                     dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
                     dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].OccupyingObject = enemy;
-                    enemiesList.Add(enemy.GetComponent<ExplorationEnemy>());
+                    enemiesList.Add(enemy.GetComponent<ExplorationCreature>());
                     quantity--;
                 }             
             }
@@ -112,15 +112,15 @@ namespace BraveNewWorld
             switch(explorationState)
             {                
                 case (ExplorationStateEnum.PlayersTurn):
-                    if (playerScript.characterState == ExplorationPlayer.CharacterState.WaitingNextTurn)
+                    if (playerScript.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
                     {
                         playerScript.BeginTurn();
                         //playerMoving = true;
                     }
-                    else if(playerScript.characterState == ExplorationPlayer.CharacterState.EndTurn)
+                    else if(playerScript.characterState == ExplorationCharacter.CharacterState.EndTurn)
                     {                        
                         NextTurn();
-                        playerScript.characterState = ExplorationPlayer.CharacterState.WaitingNextTurn;
+                        playerScript.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
                     }
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
@@ -130,8 +130,7 @@ namespace BraveNewWorld
                     }
                     break;
                 default:
-                    break;
-                
+                    break;               
             }            
             
                         
@@ -173,6 +172,11 @@ namespace BraveNewWorld
                     break;
 
             }
+        }
+
+        public void RemoveCreatureFromList(ExplorationCreature creature)
+        {
+            enemiesList.Remove(creature);
         }
     }
 }

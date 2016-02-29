@@ -9,13 +9,12 @@ namespace BraveNewWorld
     {        
 
         public GameObject pathPrefab;
-        private Transform pathParent;                
 
         public List<Tile> FindPath(Vector3 startPos, Vector3 targetPos)
         {       
 
             Tile startTile = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)startPos.x, (int)startPos.y];
-            Tile targetTile = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)targetPos.x, (int)targetPos.y]; ;
+            Tile targetTile = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)targetPos.x, (int)targetPos.y];
 
             List<Tile> openSet = new List<Tile>();
             HashSet<Tile> closedSet = new HashSet<Tile>();
@@ -43,12 +42,19 @@ namespace BraveNewWorld
 
                 foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(currentTile))
                 {
-                    if (neighbour.isOccupied || closedSet.Contains(neighbour))
+                    //if (neighbour.isOccupied || closedSet.Contains(neighbour))
+                    if (neighbour.tileType != TileTypeEnum.Floor || closedSet.Contains(neighbour))
                     {
                         continue;
                     }
 
                     int newMovementCostToNeighbour = currentTile.gCost + GetDistance(currentTile, neighbour);
+
+                    if (neighbour.isOccupied)
+                    {
+                        newMovementCostToNeighbour += 20;//Arbitrary cost just so occupied tiles are not counted on the movment
+                    }
+
                     if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
                     {
                         neighbour.gCost = newMovementCostToNeighbour;
