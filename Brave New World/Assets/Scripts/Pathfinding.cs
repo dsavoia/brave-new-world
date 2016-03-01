@@ -52,7 +52,7 @@ namespace BraveNewWorld
 
                     if (neighbour.isOccupied)
                     {
-                        newMovementCostToNeighbour += 20;//Arbitrary cost just so occupied tiles are not counted on the movment
+                        newMovementCostToNeighbour += 50;//Arbitrary cost just so occupied tiles are not counted on the movment
                     }
 
                     if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))

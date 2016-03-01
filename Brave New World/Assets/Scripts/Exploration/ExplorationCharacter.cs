@@ -20,6 +20,7 @@ namespace BraveNewWorld
         }
 
         public int meleeAttackRange = 1;
+        public int HealthQty = 10;
 
         public CharacterState characterState;
         
@@ -179,6 +180,16 @@ namespace BraveNewWorld
         public override float TakeDamage(int damage)
         {
             float animationTime = 1.0f;
+            Debug.Log("Taking Damage");
+            HealthQty -= damage;
+
+            animator.SetTrigger("PlayerHit");
+
+            if (HealthQty <= 0)
+            {
+                return Die();
+            }
+
             return animationTime;
         }
 

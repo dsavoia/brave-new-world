@@ -17,7 +17,7 @@ namespace BraveNewWorld
         protected Transform movementParent;
         protected List<Tile> path;
 
-        protected bool showMyPossibleMovement = true;
+        public bool showMyPossibleMovement;
         protected bool showedPossibleMovements;
 
         public GameObject movementHighlightPB;
@@ -116,8 +116,9 @@ namespace BraveNewWorld
         protected void PossibleMovement()
         {
             possibleMovement = new List<Vector2>();
-            objectsArroundMe.Clear();
-            occupiedPosList.Clear();
+            objectsArroundMe = new List<GameObject>();
+            occupiedPosList = new List<Vector2>();
+
             CalculatePossiblePosition(movementRange, transform.position);
             //DEBUG REASON ONLY
             /*foreach (GameObject go in ObjectsArroundMe)
@@ -159,7 +160,7 @@ namespace BraveNewWorld
 
             if (pathToFollow.Length > 0) {
 
-                ChangeOccupiedPosition(new Vector2(pathToFollow[pathToFollow.Length - 1].x, pathToFollow[pathToFollow.Length - 1].y));                
+                ChangeOccupiedPosition(new Vector2(pathToFollow[pathToFollow.Length - 1].x, pathToFollow[pathToFollow.Length - 1].y));
                 transform.DOPath(pathToFollow, path.Count / (movementSpeed == 0 ? 1 : movementSpeed), PathType.Linear, PathMode.Sidescroller2D, 0).OnComplete(() => EndMovement());
             }
             else
@@ -167,9 +168,9 @@ namespace BraveNewWorld
                 //TODO: FIX THIS
                 Debug.Log("Would've bugged");
                 EndMovement();
-            }					
+            }
         }
-        
+
         public virtual void EndMovement()
         {
             isMoving = false;

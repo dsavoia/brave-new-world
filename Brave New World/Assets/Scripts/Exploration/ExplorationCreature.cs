@@ -5,52 +5,94 @@ using System;
 namespace BraveNewWorld
 {
     public class ExplorationCreature : ExplorationMovableObject
-    {        
-        public int healthQuantity = 3;
+    {
 
+        public enum CreatureState
+        {            
+            Moving,            
+            Attacking,
+            WaitingAnimation,
+            WaitingNextTurn,
+            EndTurn
+        }
+
+        CreatureState creatureState;
+        public int healthQuantity = 3;
+        Vector2 nextPos;
 
         new void Awake()
         {
             base.Awake();
-            showMyPossibleMovement = true;
+            creatureState = CreatureState.WaitingNextTurn;            
         }
 
         public new void Move()
         {
-            Vector2 nextPos = new Vector2();          
+            
+                nextPos = new Vector2();
 
-            path.Clear();
-            PossibleMovement();
+                path.Clear();
+                PossibleMovement();
 
-            if (objectsArroundMe.Count > 0)
-            {
-                Debug.Log("There are objects arround " + gameObject.name);
-                foreach (GameObject go in objectsArroundMe)
-                {
-                    if (go.tag == "Character")
+                if (objectsArroundMe.Count > 0)
+                {                    
+                    foreach (GameObject go in objectsArroundMe)
                     {
-                        Debug.Log("Character arround " + gameObject.name);
-                        nextPos = go.transform.position;
-                        path = pathFinding.FindPath(transform.position, nextPos);//possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)]);
-                        path.Remove(path[path.Count - 1]);
+                        if (go.tag == "Character")
+                        {                            
+                            nextPos = go.transform.position;
+                            path = pathFinding.FindPath(transform.position, nextPos);//possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)]);
+                                                    
+                            path.Remove(path[path.Count - 1]);
+                        
+                            if (path.Count == 0)
+                            {
+                                path.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y]);
+                            }
 
-                        if(path.Count == 0)
-                        {
-                            path.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y]);
-                        }
+                        creatureState = CreatureState.Attacking;
 
                         break;
-                    }
-                }                
-            } 
-            else
+                        }
+                    }                    
+                }
+                else
+                {
+                    do {
+                        nextPos = possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)];
+                    } while (nextPos == new Vector2(transform.position.x, transform.position.y));
+
+                    creatureState = CreatureState.Moving;
+                    path = pathFinding.FindPath(transform.position, nextPos);
+                }
+
+
+            if (path.Count == 0)
             {
-                nextPos = possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)];
-                path = pathFinding.FindPath(transform.position, nextPos);
-            }           
+                do { 
+                 path = pathFinding.FindPath(transform.position, possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)]);
+                } while(path.Count == 0);
+                creatureState = CreatureState.Moving;
+            }
 
             base.Move();          
             
+        }
+
+        public override void EndMovement()
+        {
+            base.EndMovement();
+            switch (creatureState)
+            {
+                case CreatureState.Moving:
+                    creatureState = CreatureState.EndTurn;
+                    break;                
+                case CreatureState.Attacking:
+                    Debug.Log(gameObject.name +" is attacking " + ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)nextPos.x, (int)nextPos.y].OccupyingObject.name);
+                    StartCoroutine(Attack(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)nextPos.x, (int)nextPos.y].OccupyingObject));
+                    break;
+
+            }
         }
 
         public override void HighLightEnemies()
@@ -80,15 +122,19 @@ namespace BraveNewWorld
         }
 
         public override IEnumerator Attack(GameObject target)
-        {
-            throw new NotImplementedException();
+        {          
+            animator.SetTrigger("EnemyAttack");
+
+            yield return new WaitForSeconds(target.GetComponent<ExplorationMovableObject>().TakeDamage(1));
+
+            creatureState = CreatureState.EndTurn;
         }
 
         public override float TakeDamage(int damage)
         {
             float animationTime = 1.0f;
 
-            animator.SetTrigger("EnemyAttack");
+            animator.SetTrigger("EnemyAttack");            
             healthQuantity -= damage;
 
             if (healthQuantity <= 0)
