@@ -19,8 +19,7 @@ namespace BraveNewWorld
             EndTurn
         }
 
-        public int meleeAttackRange = 1;
-        public int HealthQty = 10;
+        public int meleeAttackRange = 1;        
 
         public CharacterState characterState;
         
@@ -181,11 +180,13 @@ namespace BraveNewWorld
         {
             float animationTime = 1.0f;
             Debug.Log("Taking Damage");
-            HealthQty -= damage;
+            actualHP -= damage;
+
+            healthBar.value = actualHP;
 
             animator.SetTrigger("PlayerHit");
 
-            if (HealthQty <= 0)
+            if (actualHP <= 0)
             {
                 return Die();
             }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,7 +34,11 @@ namespace BraveNewWorld
         public bool isMoving = false;
         public bool finishedMoving = true;
 
-        public float movementSpeed;       
+        public float movementSpeed;
+
+        public Slider healthBar;
+        public int maxHP;
+        protected int actualHP;
 
         protected void Awake()
         {
@@ -43,6 +48,10 @@ namespace BraveNewWorld
             objectsArroundMe = new List<GameObject>();
             pathFinding =  GameObject.Find("Pathfinding").GetComponent<Pathfinding>();
             animator = GetComponent<Animator>();
+            actualHP = maxHP;
+            healthBar.maxValue = maxHP;
+            healthBar.minValue = 0;
+            healthBar.value = actualHP;
         }
         
         //TODO: HIGLIGHT PREFAB CLASS SO I CAN DIFFERENTIATE BETWEEN HIGHLIGHTS

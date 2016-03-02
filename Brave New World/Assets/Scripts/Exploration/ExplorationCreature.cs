@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 
+
 namespace BraveNewWorld
 {
     public class ExplorationCreature : ExplorationMovableObject
@@ -14,11 +15,10 @@ namespace BraveNewWorld
             WaitingAnimation,
             WaitingNextTurn,
             EndTurn
-        }
+        }        
 
-        CreatureState creatureState;
-        public int healthQuantity = 3;
-        Vector2 nextPos;
+        CreatureState creatureState;        
+        Vector2 nextPos;        
 
         new void Awake()
         {
@@ -132,12 +132,14 @@ namespace BraveNewWorld
 
         public override float TakeDamage(int damage)
         {
-            float animationTime = 1.0f;
+            float animationTime = 1.0f;            
 
-            animator.SetTrigger("EnemyAttack");            
-            healthQuantity -= damage;
+            animator.SetTrigger("EnemyAttack");
+            actualHP -= damage;
 
-            if (healthQuantity <= 0)
+            healthBar.value = actualHP;
+
+            if (actualHP <= 0)
             {
                 return Die();
             }
