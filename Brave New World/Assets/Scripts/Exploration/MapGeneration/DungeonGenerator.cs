@@ -179,16 +179,9 @@ namespace BraveNewWorld
 
         int DefineNextPosition(Vector2 actualPos)
         {
-            int rand = Random.Range(0, 4);
-            //Debug.Log (rand);
+            int rand = Random.Range(0, 4);         
             return rand;
         }
-
-        //f(x) = 0,25(1-2^(-X/(Xmax / 10)))
-        /*public float moveProbValue(int x, int maxSize){
-            float result = 0.25f * (1-Mathf.Pow(2,(-(maxSize-x)/(maxSize / 10.0f))));
-            return result;
-        }*/
 
         void GenerateMapWall()
         {
@@ -328,90 +321,38 @@ namespace BraveNewWorld
                     }
                 }
             }
-        }
-
-        //This method decides where is a good place to put a door dependng on its direction.
-        //It simple tries to find a good place following straight directions from the initial position
-        /*void AddDoor(DirectionType direction){
-
-            bool goodDoorPlace = false;
-            bool foundWall = false;
-            Vector2 doorPlace = initialPos;		
-            int directionFactor;
-            bool changeOtherAxis = false;
-
-            switch(direction){
-                case DirectionType.North:
-                case DirectionType.East:
-                    directionFactor = 1;
-                    break;
-                case DirectionType.South:
-                case DirectionType.West:
-                    directionFactor = -1;
-                    break;
-                default:
-                    directionFactor = 0;
-                    break;
-            }
-
-            while(!goodDoorPlace){			
-                if(direction == DirectionType.North || direction == DirectionType.South){
-                    if(changeOtherAxis){
-                        doorPlace.x += directionFactor;
-                    }
-                    doorPlace.y += directionFactor;
-                }else {
-                    if(changeOtherAxis){
-                        doorPlace.y += directionFactor;
-                    }
-                    doorPlace.x += directionFactor;
-                }
-                //Looking for the last wall in this direction
-                if(map[(int)doorPlace.x, (int)doorPlace.y] == MapCellType.Wall){
-                    bool keepVerifying = true;
-                    Vector2 nextPosition;
-                    if(direction == DirectionType.North || direction == DirectionType.South){
-                        nextPosition = new Vector2(doorPlace.x, doorPlace.y+directionFactor);					
-                    }else{
-                        nextPosition = new Vector2(doorPlace.x + directionFactor, doorPlace.y);					
-                    }
-
-                    while(keepVerifying && ((int)nextPosition.y < mapHeigth && nextPosition.y > 0 ) && ((int)nextPosition.x < mapWidth && nextPosition.x > 0 )){
-
-                    }
-                }
-            }
-        }*/
+        }       
 
         void AddDoor()
         {
-            bool gooDoor = false;
+            bool goodDoor = false;
             int wallIndex = 0;
 
-            while (!gooDoor)
+            while (!goodDoor)
             {
                 wallIndex = Random.Range(0, wallCoords.Count);
 
                 if (map[(int)wallCoords[wallIndex].x + 1, (int)wallCoords[wallIndex].y].tileType == TileTypeEnum.Floor)
                 {
-                    gooDoor = true;
+                    goodDoor = true;
                 }
                 else if (map[(int)wallCoords[wallIndex].x - 1, (int)wallCoords[wallIndex].y].tileType == TileTypeEnum.Floor)
                 {
-                    gooDoor = true;
+                    goodDoor = true;
                 }
                 else if (map[(int)wallCoords[wallIndex].x, (int)wallCoords[wallIndex].y + 1].tileType == TileTypeEnum.Floor)
                 {
-                    gooDoor = true;
+                    goodDoor = true;
                 }
                 else if (map[(int)wallCoords[wallIndex].x, (int)wallCoords[wallIndex].y - 1].tileType == TileTypeEnum.Floor)
                 {
-                    gooDoor = true;
+                    goodDoor = true;
                 }
             }
 
             doorCoords.Add(new Vector2(wallCoords[wallIndex].x, wallCoords[wallIndex].y));
-            map[(int)wallCoords[wallIndex].x, (int)wallCoords[wallIndex].y].tileType = TileTypeEnum.Door;
+
+            map[(int)wallCoords[wallIndex].x, (int)wallCoords[wallIndex].y].tileType = TileTypeEnum.Floor;
             map[(int)wallCoords[wallIndex].x, (int)wallCoords[wallIndex].y].isOccupied = true;
             wallCoords.RemoveAt(wallIndex);
         }

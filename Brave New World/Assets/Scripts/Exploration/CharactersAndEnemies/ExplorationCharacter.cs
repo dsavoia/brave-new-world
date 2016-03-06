@@ -12,8 +12,8 @@ namespace BraveNewWorld
         {
             WaitingOrder,
             Moving,
-            MovingToAttack,
-            Attacking,
+            MovingToTarget,
+            WalkedtoTarget,
             WaitingAnimation,
             WaitingNextTurn,            
             EndTurn
@@ -22,7 +22,10 @@ namespace BraveNewWorld
         public int meleeAttackRange = 1;        
 
         public CharacterState characterState;
-        
+
+        public GameObject exitHighLightPB;
+        protected Transform exitHighLightParent;
+
         new void Awake()
         {
             base.Awake();            
@@ -32,7 +35,7 @@ namespace BraveNewWorld
             characterState = CharacterState.WaitingNextTurn;            
         }
 
-        void FixedUpdate()
+        void Update()
         {
             if (ExplorationSceneManager.instance.explorationState == ExplorationStateEnum.PlayersTurn)
             {
@@ -46,30 +49,37 @@ namespace BraveNewWorld
 
                             if (clickedObj != null)
                             {
-                                //Debug.Log(clickedObj.tag);
-                                if (clickedObj.tag == "Enemy")
-                                {
-                                    if (occupiedPosList.Contains(clickedObj.transform.position))
-                                    {
-                                        path = new List<Tile>();
-                                        path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
-                                        characterState = CharacterState.MovingToAttack;
-                                        path.RemoveAt(path.Count - 1);
-                                        Move();                                        
-                                    }
-                                }
-                                else if (clickedObj.tag == "MovableArea")
+                                
+                                if (clickedObj.tag == "MovableArea")
                                 {
                                     path = new List<Tile>();
                                     path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
                                     characterState = CharacterState.Moving;
-                                    Move();                                    
+                                    Move();
                                 }
+                                else if (clickedObj.tag == "Enemy")
+                                {                                    
+                                    if (exitHighLightParent != null)
+                                    {
+                                        Destroy(exitHighLightParent.gameObject);
+                                    }
+
+                                    MoveToTarget(clickedObj);
+                                    
+                                }
+                                else if (clickedObj.tag == "Exit")
+                                {
+                                    if (enemiesHighLightParent != null)
+                                    {
+                                        Destroy(enemiesHighLightParent.gameObject);
+                                    }
+
+                                    MoveToTarget(clickedObj);
+                                }                                
                             }
                         }
-                    break;
-                    //Debug.Log("waiting for orders");
-                    case (CharacterState.Attacking):
+                    break;                   
+                    case (CharacterState.WalkedtoTarget):
                         if (Input.GetMouseButtonDown(0))
                         {
                             GameObject clickedObj = ClickSelect();
@@ -80,8 +90,16 @@ namespace BraveNewWorld
                                 {
                                     if (VerifyIfOnRange(meleeAttackRange, clickedObj.transform.position))
                                     {
-                                        characterState = CharacterState.WaitingAnimation;
+                                        characterState = CharacterState.WaitingAnimation;                                        
                                         StartCoroutine(Attack(clickedObj));                                        
+                                    }
+                                } 
+                                else if (clickedObj.tag == "Exit")
+                                {                                    
+                                    if (VerifyIfOnRange(1, clickedObj.transform.position))
+                                    {
+                                        characterState = CharacterState.WaitingAnimation;
+                                        ExplorationSceneManager.instance.NextLevel();
                                     }
                                 }
                             }
@@ -97,9 +115,21 @@ namespace BraveNewWorld
             PossibleMovement();            
         }
 
+        void MoveToTarget(GameObject target)
+        {
+            if (occupiedPosList.Contains(target.transform.position))
+            {
+                path = new List<Tile>();
+                path = pathFinding.FindPath(transform.position, target.transform.position);
+                characterState = CharacterState.MovingToTarget;
+                path.RemoveAt(path.Count - 1);
+                Move();
+            }
+        }
+
         bool VerifyIfOnRange(int range, Vector2 targetPosition)
         {
-            float distance = (Mathf.Abs(transform.position.x) - Mathf.Abs(targetPosition.x) + (Mathf.Abs(transform.position.y) - Mathf.Abs(targetPosition.y)));
+            float distance = Mathf.Sqrt(Mathf.Pow((transform.position.x - targetPosition.x),2) + Mathf.Pow((transform.position.y - targetPosition.y),2));            
             return (distance <= range);            
         }
 
@@ -108,14 +138,24 @@ namespace BraveNewWorld
             base.EndMovement();
             switch (characterState)            
             {
+                case CharacterState.WaitingAnimation:
                 case CharacterState.Moving:
                     characterState = CharacterState.EndTurn;
+                    if (exitHighLightParent != null)
+                    {
+                        Destroy(exitHighLightParent.gameObject);
+                    }
+                    if (enemiesHighLightParent != null)
+                    {
+                        Destroy(enemiesHighLightParent.gameObject);
+                    }
                     break;
-                case CharacterState.MovingToAttack:
-                    characterState = CharacterState.Attacking;
+                case CharacterState.MovingToTarget:
+                    characterState = CharacterState.WalkedtoTarget;
                     break;
 
-            }            
+            }      
+
         }        
 
         GameObject ClickSelect()
@@ -142,30 +182,30 @@ namespace BraveNewWorld
             else return null;
         }
 
-        public override void HighLightEnemies()
+        public override void HighLightObjectsArroundMe()
         {
             //Vector2 checkPos = new Vector2();
             enemiesHighLightParent = new GameObject(gameObject.name + " EnemiesHightlightParent").transform;
-            enemiesHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
+            enemiesHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);            
 
-            if (occupiedPosList.Count > 0)
-                foreach (Vector2 pos in occupiedPosList)
+            foreach (GameObject go in objectsArroundMe)
+            {
+                if (go.tag == "Enemy")
                 {
-                    GameObject instance = Instantiate(enemiesHighLightPB, pos, Quaternion.identity) as GameObject;
+                    GameObject instance = Instantiate(enemiesHighLightPB, go.transform.position, Quaternion.identity) as GameObject;
                     instance.transform.SetParent(enemiesHighLightParent.transform);
                 }
+                if (go.tag == "Exit")
+                {
+                    exitHighLightParent = new GameObject(gameObject.name + " ExitHightlightParent").transform;
+                    exitHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
 
-        }
+                    GameObject instance = Instantiate(exitHighLightPB, go.transform.position, Quaternion.identity) as GameObject;
+                    instance.transform.SetParent(exitHighLightParent.transform);
 
-        public override void HighLightAllies()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void HighLightNeutrals()
-        {
-            throw new NotImplementedException();
-        }
+                }
+            }
+        }        
 
         public override IEnumerator Attack(GameObject target)
         {
@@ -173,7 +213,7 @@ namespace BraveNewWorld
 
             yield return new WaitForSeconds(target.GetComponent<ExplorationMovableObject>().TakeDamage(1));
 
-            characterState = CharacterState.EndTurn;           
+            EndMovement();
         }
 
         public override float TakeDamage(int damage)
@@ -193,15 +233,14 @@ namespace BraveNewWorld
             }
 
             return animationTime;
-        }
+        }    
 
         public override IEnumerator Die()
         {
             base.Die();
             float animationTime = 1.0f;
             yield return new WaitForSeconds(animationTime);
-            ExplorationSceneManager.instance.GameOver(); 
-            
+            ExplorationSceneManager.instance.GameOver();             
         }
     }
 }

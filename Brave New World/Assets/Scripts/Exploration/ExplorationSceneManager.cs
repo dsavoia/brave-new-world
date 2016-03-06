@@ -13,6 +13,8 @@ namespace BraveNewWorld
         private ExplorationCharacter playerScript;
         private bool enemiesMoving, playerMoving;
         private Transform enemiesParent;
+        private Transform exitParent;
+        private GameObject player;
 
         [HideInInspector] public ExplorationStateEnum explorationState;
         [HideInInspector] public ExplorationStateEnum previousExplorationState;
@@ -20,11 +22,13 @@ namespace BraveNewWorld
         [HideInInspector] public int hours;
         [HideInInspector] public PassOneHour passOneHour;
 
-        public int mapWidth;
-        public int mapHeigth;
+        public int initialMapWidth;
+        public int initialMapHeigth;
         public int removeLoneWallIterations;
         public int wallLayersQty;
-        public int enemiesQty;
+        public int initialEnemiesQty;
+
+        public int level;
         public GameObject addHourText;
         public GameObject enemiesTurnText;
         public GameObject[] enemyPrefab;
@@ -53,38 +57,48 @@ namespace BraveNewWorld
             {
                 _instance = this;
                 DontDestroyOnLoad(this);
-
             }
             else
             {
                 if (this != _instance)
-                    Destroy(this.gameObject);
+                    Destroy(gameObject);
             }
-                        
+
+            level = 1;
             hours = 8;
             dungeonManager = GetComponent<DungeonManager>();               
             enemiesList = new List<ExplorationCreature>();
             enemiesMoving = false;
             playerMoving = false;
-            InitExploration();
-            explorationState = ExplorationStateEnum.PlayersTurn;
-            
-            passOneHour = addHourText.GetComponent<PassOneHour>();
-            
+            InitExploration(initialMapWidth, initialMapHeigth, removeLoneWallIterations, wallLayersQty, initialEnemiesQty);
+            passOneHour = addHourText.GetComponent<PassOneHour>();            
         }
 
-        void InitExploration()
+        void InitExploration(int initialMapWidth, int initialMapHeigth, int removeLoneWallIterations, int wallLayersQty, int initialEnemiesQty)
         {
-            dungeonManager.BuildMap(mapWidth, mapHeigth, removeLoneWallIterations, wallLayersQty);
+            dungeonManager.BuildMap(initialMapWidth, initialMapHeigth, removeLoneWallIterations, wallLayersQty);
 
             Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
-            //Debug.Log(dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].position);
-            GameObject player = Instantiate(playerPrefab, playerInitialPos, Quaternion.identity) as GameObject;
+
+            if (player == null)
+            {
+                player = Instantiate(playerPrefab, playerInitialPos, Quaternion.identity) as GameObject;
+                playerScript = player.GetComponent<ExplorationCharacter>();
+            }
+            else
+            {
+                player.transform.position = playerInitialPos;
+            }
+
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = player;
-            playerScript = player.GetComponent<ExplorationCharacter>();
+
             Camera.main.GetComponent<CameraMovement>().target = player.transform;
-            SetEnemies(enemiesQty);
+            SetEnemies(initialEnemiesQty);
+            SetExit();
+
+            explorationState = ExplorationStateEnum.PlayersTurn;
+            playerScript.BeginTurn();
         }
 
         void SetEnemies(int quantity)
@@ -107,7 +121,21 @@ namespace BraveNewWorld
                     quantity--;
                 }             
             }
-        }       
+        }
+
+        void SetExit()
+        {
+            exitParent = new GameObject("ExitParent").transform;
+            exitParent.parent = dungeonManager.map.transform;
+
+            Vector2 exitPos = dungeonManager.dungeon.DoorCoords[0];
+            GameObject exit = Instantiate(dungeonManager.doorPrefab[0], exitPos, Quaternion.identity) as GameObject;
+
+            exit.name = "Exit";
+            exit.transform.parent = enemiesParent;
+            dungeonManager.dungeon.map[(int)exitPos.x, (int)exitPos.y].isOccupied = true;
+            dungeonManager.dungeon.map[(int)exitPos.x, (int)exitPos.y].OccupyingObject = exit;
+        }
 
         void Update()
         {
@@ -146,10 +174,7 @@ namespace BraveNewWorld
                 {
                     ResumeGame();                    
                 }
-
-            }          
-            
-                        
+            }
         }
 
         public void ResumeGame()
@@ -189,15 +214,15 @@ namespace BraveNewWorld
             switch (explorationState)
             {
                 case (ExplorationStateEnum.PlayersTurn):
-                    playerMoving = false;                    
+                    playerMoving = false;
                     explorationState = ExplorationStateEnum.EnemiesTurn;
-                    enemiesTurnText.gameObject.SetActive(true);                   
+                    enemiesTurnText.gameObject.SetActive(true);
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
                     enemiesMoving = false;
                     explorationState = ExplorationStateEnum.PlayersTurn;
                     addHourText.gameObject.SetActive(true);
-                    enemiesTurnText.gameObject.SetActive(false);                    
+                    enemiesTurnText.gameObject.SetActive(false);
                     break;
                 default:
                     break;
@@ -210,9 +235,29 @@ namespace BraveNewWorld
             enemiesList.Remove(creature);
         }
 
+        public void NextLevel()
+        {
+            level++;
+
+            enemiesList.Clear();
+            Destroy(GameObject.Find("Map").gameObject);
+
+            int newMapWidth = (int)(initialMapWidth + (level * 1.5f));
+            int newMapHeigth = (int)(initialMapHeigth + (level * 1.5f));
+            //TODO BETTER ENEMY QTY PROGRESSION
+            int newEnemiesQty = (int)Mathf.Log(level, 2.0f);
+
+            if (playerScript.actualHP < playerScript.maxHP)
+            {
+                playerScript.RecoverHealth(1);
+            }
+
+            InitExploration(newMapWidth, newMapHeigth, removeLoneWallIterations, wallLayersQty, newEnemiesQty);
+        }
+
         public void GameOver()
         {
-            SceneManager.LoadScene("GameOver");            
+            SceneManager.LoadScene("GameOver");
         }
     }
 }

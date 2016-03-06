@@ -23,7 +23,7 @@ namespace BraveNewWorld
 
         public GameObject movementHighlightPB;
         public GameObject enemiesHighLightPB;
-        protected Transform enemiesHighLightParent;
+        protected Transform enemiesHighLightParent;        
 
         protected Animator animator;
 
@@ -38,7 +38,7 @@ namespace BraveNewWorld
 
         public Slider healthBar;
         public int maxHP;
-        protected int actualHP;
+        public int actualHP;
 
         protected void Awake()
         {
@@ -129,11 +129,6 @@ namespace BraveNewWorld
             occupiedPosList = new List<Vector2>();
 
             CalculatePossiblePosition(movementRange, transform.position);
-            //DEBUG REASON ONLY
-            /*foreach (GameObject go in ObjectsArroundMe)
-            {
-                Debug.Log(" Inside " + gameObject.name + "'s area is: " + go.name);
-            }*/
 
             if (showMyPossibleMovement)
             {   
@@ -143,8 +138,8 @@ namespace BraveNewWorld
                 GameObject instance;
 
                 if (occupiedPosList.Count > 0)
-                {
-                    HighLightEnemies();
+                {   
+                    HighLightObjectsArroundMe();
                 }
 
                 for (int i = 0; i < possibleMovement.Count; i++)
@@ -188,11 +183,7 @@ namespace BraveNewWorld
             if (movementParent != null)
             {
                 Destroy(movementParent.gameObject);
-            }
-            if (enemiesHighLightParent != null)
-            {
-                Destroy(enemiesHighLightParent.gameObject);
-            }
+            }                      
 
         }
 
@@ -215,10 +206,19 @@ namespace BraveNewWorld
             return null;
         }
 
-        public abstract void HighLightEnemies();
-        public abstract void HighLightAllies();
-        public abstract void HighLightNeutrals();
+        public void RecoverHealth(int recoverQuantity)
+        {
+            actualHP += recoverQuantity;
 
+            if(actualHP > maxHP)
+            {
+                actualHP = maxHP;
+            }
+
+            healthBar.value = actualHP;
+        }
+
+        public abstract void HighLightObjectsArroundMe();        
     }
 }
 

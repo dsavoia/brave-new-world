@@ -27,8 +27,7 @@ namespace BraveNewWorld
         }
 
         public new void Move()
-        {
-            
+        {            
                 nextPos = new Vector2();
 
                 path.Clear();
@@ -85,40 +84,32 @@ namespace BraveNewWorld
             switch (creatureState)
             {
                 case CreatureState.Moving:
+                    if (enemiesHighLightParent != null)
+                    {
+                        Destroy(enemiesHighLightParent.gameObject);
+                    }
                     creatureState = CreatureState.EndTurn;
                     break;                
                 case CreatureState.Attacking:
-                    Debug.Log(gameObject.name +" is attacking " + ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)nextPos.x, (int)nextPos.y].OccupyingObject.name);
+                    //Debug.Log(gameObject.name +" is attacking " + ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)nextPos.x, (int)nextPos.y].OccupyingObject.name);
                     StartCoroutine(Attack(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)nextPos.x, (int)nextPos.y].OccupyingObject));
                     break;
-
             }
         }
 
-        public override void HighLightEnemies()
-        {
-            //Vector2 checkPos = new Vector2();
+        public override void HighLightObjectsArroundMe()
+        {            
             enemiesHighLightParent = new GameObject(gameObject.name + " EnemiesHightlightParent").transform;
             enemiesHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
 
-            if (occupiedPosList.Count > 0)
+            foreach (GameObject go in objectsArroundMe)
             {
-                foreach (Vector2 pos in occupiedPosList)
+                if (go.tag == "Character")
                 {
-                    GameObject instance = Instantiate(enemiesHighLightPB, pos, Quaternion.identity) as GameObject;
+                    GameObject instance = Instantiate(enemiesHighLightPB, go.transform.position, Quaternion.identity) as GameObject;
                     instance.transform.SetParent(enemiesHighLightParent.transform);
                 }
             }
-        }
-
-        public override void HighLightAllies()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void HighLightNeutrals()
-        {
-            throw new NotImplementedException();
         }
 
         public override IEnumerator Attack(GameObject target)
