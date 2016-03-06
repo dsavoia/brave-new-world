@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,25 +9,27 @@ namespace BraveNewWorld
     {
 
         private static ExplorationSceneManager _instance;
-
-        public ExplorationStateEnum explorationState;
-        //public Vector2 boardSize;
-        public int obstaclesQuantitity, enemiesQty;
-        public GameObject[] enemyPrefab;
-        public GameObject playerPrefab;
-        [HideInInspector]
-        //public BoardManager boardManager;
-        public DungeonManager dungeonManager;
-        List<ExplorationCreature> enemiesList;
+        private List<ExplorationCreature> enemiesList;
         private ExplorationCharacter playerScript;
         private bool enemiesMoving, playerMoving;
         private Transform enemiesParent;
+
+        [HideInInspector] public ExplorationStateEnum explorationState;
+        [HideInInspector] public ExplorationStateEnum previousExplorationState;
+        [HideInInspector] public DungeonManager dungeonManager;
+        [HideInInspector] public int hours;
+        [HideInInspector] public PassOneHour passOneHour;
+
+        public int mapWidth;
+        public int mapHeigth;
+        public int removeLoneWallIterations;
+        public int wallLayersQty;
+        public int enemiesQty;
         public GameObject addHourText;
         public GameObject enemiesTurnText;
-        [HideInInspector]
-        public int hours;
-        [HideInInspector]
-        public PassOneHour passOneHour;
+        public GameObject[] enemyPrefab;
+        public GameObject playerPrefab;
+        public GameObject pauseMenu;        
 
         public static ExplorationSceneManager instance
         {
@@ -67,13 +70,12 @@ namespace BraveNewWorld
             explorationState = ExplorationStateEnum.PlayersTurn;
             
             passOneHour = addHourText.GetComponent<PassOneHour>();
-
-
+            
         }
 
         void InitExploration()
         {
-            dungeonManager.BuildMap();
+            dungeonManager.BuildMap(mapWidth, mapHeigth, removeLoneWallIterations, wallLayersQty);
 
             Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
             //Debug.Log(dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].position);
@@ -128,12 +130,41 @@ namespace BraveNewWorld
 						enemiesMoving = true;    
 						StartCoroutine(MoveEnemies());                        
                     }
-                    break;
+                    break;                
                 default:
                     break;               
-            }            
+            }
+
+            if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
+            {
+
+                if (explorationState != ExplorationStateEnum.PausedGame)
+                {
+                    PauseGame();
+                }
+                else
+                {
+                    ResumeGame();                    
+                }
+
+            }          
             
                         
+        }
+
+        public void ResumeGame()
+        {
+            explorationState = previousExplorationState;
+            Time.timeScale = 1;
+            pauseMenu.SetActive(false);
+        }
+
+        public void PauseGame()
+        {
+            previousExplorationState = explorationState;
+            explorationState = ExplorationStateEnum.PausedGame;
+            pauseMenu.SetActive(true);
+            Time.timeScale = 0;            
         }
 
         IEnumerator MoveEnemies()
@@ -177,6 +208,11 @@ namespace BraveNewWorld
         public void RemoveCreatureFromList(ExplorationCreature creature)
         {
             enemiesList.Remove(creature);
+        }
+
+        public void GameOver()
+        {
+            SceneManager.LoadScene("GameOver");            
         }
     }
 }

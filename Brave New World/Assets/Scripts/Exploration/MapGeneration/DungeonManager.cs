@@ -10,12 +10,7 @@ namespace BraveNewWorld
         public GameObject[] doorPrefab;
         //public GameObject playerPrefab;
         //public GameObject zoombiePrefab;
-        public DungeonGenerator generator;
-
-        public int mapWidth;
-        public int mapHeigth;
-        public int removeLoneWallIterations;
-        public int wallLayersQty;       
+        public DungeonGenerator generator;      
 
         //public int masterMapWidth;
         //public int masterMapHeigth;
@@ -30,7 +25,7 @@ namespace BraveNewWorld
         public GameObject map;             
 
         //Print only one map
-        public void BuildMap()
+        public void BuildMap(int mapWidth, int mapHeigth, int removeLoneWallIterations, int wallLayersQty)
         {
             map = new GameObject("Map");
             dungeon = new Dungeon();

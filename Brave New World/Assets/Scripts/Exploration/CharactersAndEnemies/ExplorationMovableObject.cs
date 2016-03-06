@@ -207,12 +207,12 @@ namespace BraveNewWorld
         public abstract IEnumerator Attack(GameObject target);        
         public abstract float TakeDamage(int damage);
         
-        public virtual float Die()
+        public virtual IEnumerator Die()
         {
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y].isOccupied = false;
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y].OccupyingObject = null;
 
-            return 0;
+            return null;
         }
 
         public abstract void HighLightEnemies();

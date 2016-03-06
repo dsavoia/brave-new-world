@@ -1,4 +1,9 @@
-﻿public enum ExplorationStateEnum {
-    PlayersTurn,
-    EnemiesTurn
+﻿namespace BraveNewWorld
+{
+    public enum ExplorationStateEnum
+    {
+        PlayersTurn,
+        EnemiesTurn,
+        PausedGame
+    }
 }

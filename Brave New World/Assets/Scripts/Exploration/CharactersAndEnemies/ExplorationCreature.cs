@@ -141,19 +141,20 @@ namespace BraveNewWorld
 
             if (actualHP <= 0)
             {
-                return Die();
+                StartCoroutine(Die());
+                return 0;
             }
 
             return animationTime;
         }
 
-        public override float Die()
+        public override IEnumerator Die()
         {
             base.Die();
             float animationTime = 1.0f;
             ExplorationSceneManager.instance.RemoveCreatureFromList(GetComponent<ExplorationCreature>());
             Destroy(gameObject);
-            return animationTime;
+            yield return new WaitForSeconds(animationTime);
         }
     }
 }
