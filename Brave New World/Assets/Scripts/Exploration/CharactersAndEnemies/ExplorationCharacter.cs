@@ -26,6 +26,8 @@ namespace BraveNewWorld
         public GameObject exitHighLightPB;
         protected Transform exitHighLightParent;
 
+        public GameObject cancelActionButton;
+
         new void Awake()
         {
             base.Awake();            
@@ -79,14 +81,28 @@ namespace BraveNewWorld
                             }
                         }
                     break;                   
-                    case (CharacterState.WalkedtoTarget):
+                    case (CharacterState.WalkedtoTarget):                        
                         if (Input.GetMouseButtonDown(0))
                         {
                             GameObject clickedObj = ClickSelect();
 
                             if (clickedObj != null)
                             {
-                                if (clickedObj.tag == "Enemy")
+                                if (clickedObj.tag == "CancelAction")
+                                {
+                                    if (enemiesHighLightParent != null)
+                                    {
+                                        Destroy(enemiesHighLightParent.gameObject);
+                                    }
+                                    if (exitHighLightParent != null)
+                                    {
+                                        Destroy(exitHighLightParent.gameObject);
+                                    }
+                                    Debug.Log("Canceling action");
+                                    characterState = CharacterState.EndTurn;
+
+                                }
+                                else if(clickedObj.tag == "Enemy")
                                 {
                                     if (VerifyIfOnRange(meleeAttackRange, clickedObj.transform.position))
                                     {
@@ -99,9 +115,11 @@ namespace BraveNewWorld
                                     if (VerifyIfOnRange(1, clickedObj.transform.position))
                                     {
                                         characterState = CharacterState.WaitingAnimation;
+                                        HideActionsOptions();
                                         ExplorationSceneManager.instance.NextLevel();
                                     }
                                 }
+                                 
                             }
                         }
                     break;
@@ -137,7 +155,7 @@ namespace BraveNewWorld
         {
             base.EndMovement();
             switch (characterState)            
-            {
+            {                
                 case CharacterState.WaitingAnimation:
                 case CharacterState.Moving:
                     characterState = CharacterState.EndTurn;
@@ -148,15 +166,27 @@ namespace BraveNewWorld
                     if (enemiesHighLightParent != null)
                     {
                         Destroy(enemiesHighLightParent.gameObject);
-                    }
+                    }                    
                     break;
                 case CharacterState.MovingToTarget:
+                    ShowActionsOptions();
                     characterState = CharacterState.WalkedtoTarget;
                     break;
 
             }      
 
-        }        
+        }
+
+        public void ShowActionsOptions()
+        {
+            Debug.Log("Showing cancel button");
+            cancelActionButton.SetActive(true);
+        }
+
+        public void HideActionsOptions()
+        {
+            cancelActionButton.SetActive(false);
+        }
 
         GameObject ClickSelect()
         {
@@ -209,10 +239,9 @@ namespace BraveNewWorld
 
         public override IEnumerator Attack(GameObject target)
         {
+            HideActionsOptions();
             animator.SetTrigger("PlayerChop");
-
             yield return new WaitForSeconds(target.GetComponent<ExplorationMovableObject>().TakeDamage(1));
-
             EndMovement();
         }
 
