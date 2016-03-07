@@ -31,6 +31,7 @@ namespace BraveNewWorld
 
         public int level;
         public GameObject addHourText;
+        public GameObject levelText;
         public GameObject enemiesTurnText;
         public GameObject[] enemyPrefab;
         public GameObject playerPrefab;
@@ -100,7 +101,9 @@ namespace BraveNewWorld
             SetExit();
 
             explorationState = ExplorationStateEnum.PlayersTurn;
+            levelText.GetComponent<LevelText>().UpdateLevel();
             playerScript.BeginTurn();
+            
         }
 
         void SetEnemies(int quantity)

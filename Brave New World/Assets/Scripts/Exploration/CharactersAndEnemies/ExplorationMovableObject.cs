@@ -170,7 +170,7 @@ namespace BraveNewWorld
             else
             {
                 //TODO: FIX THIS
-                Debug.Log("Would've bugged");
+                //Debug.Log("Would've bugged");
                 EndMovement();
             }
         }

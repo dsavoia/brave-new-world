@@ -16,10 +16,13 @@ namespace BraveNewWorld
             WalkedtoTarget,
             WaitingAnimation,
             WaitingNextTurn,            
-            EndTurn
+            EndTurn,
+            Dead
         }
 
-        public int meleeAttackRange = 1;        
+        public int meleeAttackRange = 1;
+
+        public LayerMask layerMask;
 
         public CharacterState characterState;
 
@@ -99,6 +102,7 @@ namespace BraveNewWorld
                                         Destroy(exitHighLightParent.gameObject);
                                     }
                                     Debug.Log("Canceling action");
+                                    HideActionsOptions();
                                     characterState = CharacterState.EndTurn;
 
                                 }
@@ -178,8 +182,7 @@ namespace BraveNewWorld
         }
 
         public void ShowActionsOptions()
-        {
-            Debug.Log("Showing cancel button");
+        {            
             cancelActionButton.SetActive(true);
         }
 
@@ -192,9 +195,9 @@ namespace BraveNewWorld
         {
             //Converting Mouse Pos to 2D (vector2) World Pos
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit2D[] hit = Physics2D.RaycastAll(ray.origin, ray.direction, Mathf.Infinity);
+            RaycastHit2D[] hit = Physics2D.RaycastAll(ray.origin, ray.direction, Mathf.Infinity, layerMask);
 
-            if (hit.Length > 0)
+            /*if (hit.Length > 0)
             {
                 for (int i = 0; i < hit.Length; i++)
                 {
@@ -207,9 +210,18 @@ namespace BraveNewWorld
                 }
 
                 return hit[0].collider.gameObject;
-            }
+            }*/
 
-            else return null;
+            
+            if (hit.Length > 0)
+            {
+                //Debug.Log(hit[0].collider.gameObject.name);
+                return hit[0].collider.gameObject;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public override void HighLightObjectsArroundMe()
@@ -268,6 +280,7 @@ namespace BraveNewWorld
         {
             base.Die();
             float animationTime = 1.0f;
+            characterState = CharacterState.Dead;
             yield return new WaitForSeconds(animationTime);
             ExplorationSceneManager.instance.GameOver();             
         }

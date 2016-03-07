@@ -101,6 +101,7 @@
     <Compile Include="Assets\Scripts\Exploration\UI\CreaturesTurnText.cs" />
     <Compile Include="Assets\Scripts\Exploration\UI\ExplorationPauseMenuButtons.cs" />
     <Compile Include="Assets\Scripts\Exploration\UI\HourText.cs" />
+    <Compile Include="Assets\Scripts\Exploration\UI\LevelText.cs" />
     <Compile Include="Assets\Scripts\Exploration\UI\PassOneHour.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\GameStatesEnum.cs" />
