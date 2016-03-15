@@ -10,7 +10,7 @@ using DG.Tweening;
 namespace BraveNewWorld
 {
     public abstract class ExplorationMovableObject : MonoBehaviour
-    {        
+    {
         protected List<Vector2> possibleMovement;
         protected List<Vector2> occupiedPosList;
         protected List<GameObject> objectsArroundMe;
@@ -23,7 +23,7 @@ namespace BraveNewWorld
 
         public GameObject movementHighlightPB;
         public GameObject enemiesHighLightPB;
-        protected Transform enemiesHighLightParent;        
+        protected Transform enemiesHighLightParent;
 
         protected Animator animator;
 
@@ -38,28 +38,27 @@ namespace BraveNewWorld
 
         public Slider healthBar;
         public int maxHP;
-        public int actualHP;
+        public int actualHP;       
 
         protected void Awake()
         {
-            path = new List<Tile>();            
+            path = new List<Tile>();
             possibleMovement = new List<Vector2>();
             occupiedPosList = new List<Vector2>();
             objectsArroundMe = new List<GameObject>();
-            pathFinding =  GameObject.Find("Pathfinding").GetComponent<Pathfinding>();
+            pathFinding = GameObject.Find("Pathfinding").GetComponent<Pathfinding>();
             animator = GetComponent<Animator>();
             actualHP = maxHP;
             healthBar.maxValue = maxHP;
             healthBar.minValue = 0;
             healthBar.value = actualHP;
         }
-        
-        //TODO: HIGLIGHT PREFAB CLASS SO I CAN DIFFERENTIATE BETWEEN HIGHLIGHTS
+       
         protected void CalculatePossiblePosition(int range, Vector2 pos)
         {
-            Tile actualPos = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y];            
+            Tile actualPos = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y];
             List<Vector2> openSet = new List<Vector2>();
-            List<Vector2> auxiliarSet = new List<Vector2>();           
+            List<Vector2> auxiliarSet = new List<Vector2>();
 
             //Adding first neighbours
             foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(actualPos))
@@ -80,7 +79,7 @@ namespace BraveNewWorld
             for (int i = 0; i < range; i++)
             {
                 foreach (Vector2 openSetPos in openSet)
-                {                    
+                {
                     foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)openSetPos.x, (int)openSetPos.y]))
                     {
                         if (neighbour.tileType == TileTypeEnum.Floor && !auxiliarSet.Contains(neighbour.position))
@@ -109,7 +108,7 @@ namespace BraveNewWorld
                     openSet.Add(auxiliarPos);
                 }
 
-                auxiliarSet.Clear();                                
+                auxiliarSet.Clear();
             }
 
             occupiedPosList.Remove(pos);
@@ -131,29 +130,29 @@ namespace BraveNewWorld
             CalculatePossiblePosition(movementRange, transform.position);
 
             if (showMyPossibleMovement)
-            {   
+            {
                 movementParent = new GameObject(gameObject.name + " MovementParent").transform;
                 movementParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
-             
+
                 GameObject instance;
 
                 if (occupiedPosList.Count > 0)
-                {   
+                {
                     HighLightObjectsArroundMe();
                 }
 
                 for (int i = 0; i < possibleMovement.Count; i++)
-                {                    
+                {
                     instance = Instantiate(movementHighlightPB, possibleMovement[i], Quaternion.identity) as GameObject;
                     instance.transform.SetParent(movementParent);
                 }
             }
 
             finishedMoving = false;
-        }       
+        }
 
         public void Move()
-        {            
+        {
             Vector3[] pathToFollow = new Vector3[path.Count];
             for (int i = 0; i < path.Count; i++)
             {
@@ -162,7 +161,8 @@ namespace BraveNewWorld
 
             isMoving = true;
 
-            if (pathToFollow.Length > 0) {
+            if (pathToFollow.Length > 0)
+            {
 
                 ChangeOccupiedPosition(new Vector2(pathToFollow[pathToFollow.Length - 1].x, pathToFollow[pathToFollow.Length - 1].y));
                 transform.DOPath(pathToFollow, path.Count / (movementSpeed == 0 ? 1 : movementSpeed), PathType.Linear, PathMode.Sidescroller2D, 0).OnComplete(() => EndMovement());
@@ -183,7 +183,7 @@ namespace BraveNewWorld
             if (movementParent != null)
             {
                 Destroy(movementParent.gameObject);
-            }                      
+            }
 
         }
 
@@ -193,11 +193,11 @@ namespace BraveNewWorld
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y].OccupyingObject = null;
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)posToOccupy.x, (int)posToOccupy.y].isOccupied = true;
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)posToOccupy.x, (int)posToOccupy.y].OccupyingObject = gameObject;
-        }       
+        }
 
-        public abstract IEnumerator Attack(GameObject target);        
+        public abstract IEnumerator Attack(GameObject target);
         public abstract float TakeDamage(int damage);
-        
+
         public virtual IEnumerator Die()
         {
             ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)transform.position.x, (int)transform.position.y].isOccupied = false;
@@ -210,7 +210,7 @@ namespace BraveNewWorld
         {
             actualHP += recoverQuantity;
 
-            if(actualHP > maxHP)
+            if (actualHP > maxHP)
             {
                 actualHP = maxHP;
             }
@@ -218,7 +218,7 @@ namespace BraveNewWorld
             healthBar.value = actualHP;
         }
 
-        public abstract void HighLightObjectsArroundMe();        
+        public abstract void HighLightObjectsArroundMe();
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -11,11 +12,12 @@ namespace BraveNewWorld
         public enum CharacterState
         {
             WaitingOrder,
+            ChoosingAction,
             Moving,
             MovingToTarget,
-            WalkedtoTarget,
+            MovedToTarget,
             WaitingAnimation,
-            WaitingNextTurn,            
+            WaitingNextTurn,
             EndTurn,
             Dead
         }
@@ -29,15 +31,27 @@ namespace BraveNewWorld
         public GameObject exitHighLightPB;
         protected Transform exitHighLightParent;
 
-        public GameObject cancelActionButton;
+        protected Transform pathHighlightParent;
+        public GameObject pathHighlightPB;
+
+        public Sprite cancelActionButton;
+        public Sprite movementActionButton;
+        public Sprite attackActionButton;
+
+
+        public List<GameObject> skillsPlaceHolder;
+        public GameObject skillsPlaceHolderParent;
+
+        string lastClickedObjectTag;
+        Transform lastClickedObjectPosition;
 
         new void Awake()
         {
-            base.Awake();            
+            base.Awake();
             //showMyPossibleMovement = true;
             finishedMoving = false;
             possibleMovement = new List<Vector2>();
-            characterState = CharacterState.WaitingNextTurn;            
+            characterState = CharacterState.WaitingNextTurn;
         }
 
         void Update()
@@ -45,7 +59,7 @@ namespace BraveNewWorld
             if (ExplorationSceneManager.instance.explorationState == ExplorationStateEnum.PlayersTurn)
             {
                 //if (!isMoving && !finishedMoving)
-                switch(characterState)
+                switch (characterState)
                 {
                     case (CharacterState.WaitingOrder):
                         if (Input.GetMouseButtonDown(0))
@@ -54,44 +68,43 @@ namespace BraveNewWorld
 
                             if (clickedObj != null)
                             {
-                                
-                                if (clickedObj.tag == "MovableArea")
+                                lastClickedObjectTag = clickedObj.tag;
+                                lastClickedObjectPosition = clickedObj.transform;
+
+                                //TODO VERIFICAR SE A SAíDA ESTA DENTRO DO ALCANCE DO JOGADOR
+                                if (clickedObj.tag == "MovableArea" || clickedObj.tag == "Exit")
                                 {
+                                    characterState = CharacterState.ChoosingAction;
                                     path = new List<Tile>();
                                     path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
-                                    characterState = CharacterState.Moving;
-                                    Move();
+                                    ShowMovementPath();
+                                    ShowMovementActions();
                                 }
                                 else if (clickedObj.tag == "Enemy")
-                                {                                    
+                                {
                                     if (exitHighLightParent != null)
                                     {
                                         Destroy(exitHighLightParent.gameObject);
                                     }
 
-                                    MoveToTarget(clickedObj);
-                                    
-                                }
-                                else if (clickedObj.tag == "Exit")
-                                {
-                                    if (enemiesHighLightParent != null)
-                                    {
-                                        Destroy(enemiesHighLightParent.gameObject);
-                                    }
+                                    characterState = CharacterState.ChoosingAction;
 
-                                    MoveToTarget(clickedObj);
-                                }                                
+                                    path = new List<Tile>();
+                                    path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+                                    ShowMovementPath();
+                                    ShowAttackActions();
+                                }
                             }
                         }
-                    break;                   
-                    case (CharacterState.WalkedtoTarget):                        
+                        break;
+                    case (CharacterState.ChoosingAction):
                         if (Input.GetMouseButtonDown(0))
                         {
                             GameObject clickedObj = ClickSelect();
 
                             if (clickedObj != null)
                             {
-                                if (clickedObj.tag == "CancelAction")
+                                if (clickedObj.tag == "CancelIcon")
                                 {
                                     if (enemiesHighLightParent != null)
                                     {
@@ -101,43 +114,168 @@ namespace BraveNewWorld
                                     {
                                         Destroy(exitHighLightParent.gameObject);
                                     }
-                                    Debug.Log("Canceling action");
-                                    HideActionsOptions();
-                                    characterState = CharacterState.EndTurn;
-
-                                }
-                                else if(clickedObj.tag == "Enemy")
-                                {
-                                    if (VerifyIfOnRange(meleeAttackRange, clickedObj.transform.position))
+                                    if (pathHighlightParent != null)
                                     {
-                                        characterState = CharacterState.WaitingAnimation;                                        
-                                        StartCoroutine(Attack(clickedObj));                                        
+                                        Destroy(pathHighlightParent.gameObject);
                                     }
-                                } 
-                                else if (clickedObj.tag == "Exit")
+
+                                    CloseActionsHUD();
+                                    BeginTurn();
+                                }
+                                else if (clickedObj.tag == "MovementIcon")
+                                {
+
+                                    if (pathHighlightParent != null)
+                                    {
+                                        Destroy(pathHighlightParent.gameObject);
+                                    }
+
+                                    CloseActionsHUD();
+
+                                    if (lastClickedObjectTag == "Enemy")
+                                    {
+                                        characterState = CharacterState.MovingToTarget;
+                                        StartCoroutine(MoveToTarget(lastClickedObjectPosition.gameObject));
+                                    }
+                                    else
+                                    {
+                                        characterState = CharacterState.Moving;
+                                        Move();
+                                    }
+                                }
+                                else if (clickedObj.tag == "AttackIcon")
+                                {
+                                    if (pathHighlightParent != null)
+                                    {
+                                        Destroy(pathHighlightParent.gameObject);
+                                    }
+
+                                    CloseActionsHUD();
+
+                                    StartCoroutine(MoveToTargetAndAttack(lastClickedObjectPosition.gameObject));
+                                }
+                                /*else if (clickedObj.tag == "Exit")
                                 {                                    
                                     if (VerifyIfOnRange(1, clickedObj.transform.position))
                                     {
                                         characterState = CharacterState.WaitingAnimation;
-                                        HideActionsOptions();
+                                        //HideActionsOptions();
                                         ExplorationSceneManager.instance.NextLevel();
                                     }
-                                }
-                                 
+                                }*/
+
                             }
                         }
-                    break;
-                }        
+                        break;
+                }
+            }
+        }
+
+        void OnTriggerEnter2D(Collider2D other)
+        {
+            if (other.tag == "Exit")
+            {
+                characterState = CharacterState.WaitingAnimation;
+                StartCoroutine(WaitAndExit());
             }
         }
 
         public void BeginTurn()
         {
             characterState = CharacterState.WaitingOrder;
-            PossibleMovement();            
+            PossibleMovement();
         }
 
-        void MoveToTarget(GameObject target)
+        IEnumerator WaitAndExit()
+        {
+            while (characterState == CharacterState.WaitingAnimation)
+            {
+                yield return null;
+            }
+
+            ExplorationSceneManager.instance.NextLevel();
+        }
+
+        public void ShowMovementPath()
+        {
+
+            pathHighlightParent = new GameObject(gameObject.name + " PathHighlightParent").transform;
+            pathHighlightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
+
+            GameObject pathTile;
+
+            pathTile = Instantiate(pathHighlightPB, transform.position, Quaternion.identity) as GameObject;
+            pathTile.transform.parent = pathHighlightParent;
+
+            foreach (Tile p in path)
+            {
+                pathTile = Instantiate(pathHighlightPB, new Vector3(p.position.x, p.position.y, 0), Quaternion.identity) as GameObject;
+                pathTile.transform.parent = pathHighlightParent;
+            }
+        }
+
+        public virtual void ShowMovementActions()
+        {
+            if (movementParent != null)
+            {
+                Destroy(movementParent.gameObject);
+            }
+
+            OpenActionsHUD();
+
+            skillsPlaceHolder[0].GetComponent<Image>().sprite = movementActionButton;
+            skillsPlaceHolder[0].tag = "MovementIcon";
+            skillsPlaceHolder[0].SetActive(true);
+
+            skillsPlaceHolder[1].GetComponent<Image>().sprite = cancelActionButton;
+            skillsPlaceHolder[1].tag = "CancelIcon";
+            skillsPlaceHolder[1].SetActive(true);
+
+        }
+
+        public virtual void ShowAttackActions()
+        {
+            if (movementParent != null)
+            {
+                Destroy(movementParent.gameObject);
+            }
+
+            OpenActionsHUD();
+
+            skillsPlaceHolder[0].GetComponent<Image>().sprite = attackActionButton;
+            skillsPlaceHolder[0].tag = "AttackIcon";
+            skillsPlaceHolder[0].SetActive(true);
+
+            skillsPlaceHolder[1].GetComponent<Image>().sprite = movementActionButton;
+            skillsPlaceHolder[1].tag = "MovementIcon";
+            skillsPlaceHolder[1].SetActive(true);
+
+            skillsPlaceHolder[2].GetComponent<Image>().sprite = cancelActionButton;
+            skillsPlaceHolder[2].tag = "CancelIcon";
+            skillsPlaceHolder[2].SetActive(true);
+
+        }
+
+        public void CleanActionsHUD()
+        {
+            for (int i = 0; i < skillsPlaceHolder.Count; i++)
+            {
+                skillsPlaceHolder[i].SetActive(false);
+            }
+        }
+
+        public void OpenActionsHUD()
+        {
+            skillsPlaceHolderParent.SetActive(true);
+            CleanActionsHUD();
+        }
+
+        public void CloseActionsHUD()
+        {
+            skillsPlaceHolderParent.SetActive(false);
+        }
+
+        IEnumerator MoveToTarget(GameObject target)
         {
             if (occupiedPosList.Contains(target.transform.position))
             {
@@ -147,7 +285,32 @@ namespace BraveNewWorld
                 path.RemoveAt(path.Count - 1);
                 Move();
             }
+
+            while (characterState == CharacterState.MovingToTarget)
+            {
+                yield return null;
+            }
+
+            EndMovement();
+
         }
+        
+        IEnumerator MoveToTargetAndAttack(GameObject target)
+        {
+            StartCoroutine(MoveToTarget(target));
+
+            while (characterState == CharacterState.MovingToTarget)
+            {
+                yield return null;
+            }
+
+            if (VerifyIfOnRange(meleeAttackRange, lastClickedObjectPosition.position))
+            {
+                characterState = CharacterState.WaitingAnimation;
+                StartCoroutine(Attack(lastClickedObjectPosition.gameObject));
+            }
+        }
+    
 
         bool VerifyIfOnRange(int range, Vector2 targetPosition)
         {
@@ -161,6 +324,7 @@ namespace BraveNewWorld
             switch (characterState)            
             {                
                 case CharacterState.WaitingAnimation:
+                case CharacterState.MovedToTarget:
                 case CharacterState.Moving:
                     characterState = CharacterState.EndTurn;
                     if (exitHighLightParent != null)
@@ -173,49 +337,21 @@ namespace BraveNewWorld
                     }                    
                     break;
                 case CharacterState.MovingToTarget:
-                    ShowActionsOptions();
-                    characterState = CharacterState.WalkedtoTarget;
+                    characterState = CharacterState.MovedToTarget;
                     break;
-
             }      
 
-        }
-
-        public void ShowActionsOptions()
-        {            
-            cancelActionButton.SetActive(true);
-        }
-
-        public void HideActionsOptions()
-        {
-            cancelActionButton.SetActive(false);
-        }
+        }       
 
         GameObject ClickSelect()
         {
             //Converting Mouse Pos to 2D (vector2) World Pos
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D[] hit = Physics2D.RaycastAll(ray.origin, ray.direction, Mathf.Infinity, layerMask);
-
-            /*if (hit.Length > 0)
-            {
-                for (int i = 0; i < hit.Length; i++)
-                {
-                    ExplorationMovableObject go = hit[i].collider.gameObject.GetComponent<ExplorationMovableObject>() as ExplorationMovableObject;
-
-                    if (go != null)
-                    {
-                        return hit[i].collider.gameObject;
-                    }
-                }
-
-                return hit[0].collider.gameObject;
-            }*/
-
-            
+                                   
             if (hit.Length > 0)
             {
-                //Debug.Log(hit[0].collider.gameObject.name);
+                Debug.Log(hit[0].collider.gameObject.name);
                 return hit[0].collider.gameObject;
             }
             else
@@ -251,9 +387,10 @@ namespace BraveNewWorld
 
         public override IEnumerator Attack(GameObject target)
         {
-            HideActionsOptions();
+            //HideCancelOption();
             animator.SetTrigger("PlayerChop");
             yield return new WaitForSeconds(target.GetComponent<ExplorationMovableObject>().TakeDamage(1));
+            characterState = CharacterState.Moving;
             EndMovement();
         }
 

@@ -89,10 +89,13 @@
     <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\ExplorationCharacter.cs" />
     <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\ExplorationCreature.cs" />
     <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\ExplorationMovableObject.cs" />
+    <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\Skills\BaseSkill.cs" />
+    <Compile Include="Assets\Scripts\Exploration\ClickableObjectType.cs" />
     <Compile Include="Assets\Scripts\Exploration\DayAndNight.cs" />
     <Compile Include="Assets\Scripts\Exploration\ExplorationSceneManager.cs" />
     <Compile Include="Assets\Scripts\Exploration\ExplorationStateEnum.cs" />
     <Compile Include="Assets\Scripts\Exploration\GameOver.cs" />
+    <Compile Include="Assets\Scripts\Exploration\IClickableObject.cs" />
     <Compile Include="Assets\Scripts\Exploration\MapGeneration\Dungeon.cs" />
     <Compile Include="Assets\Scripts\Exploration\MapGeneration\DungeonGenerator.cs" />
     <Compile Include="Assets\Scripts\Exploration\MapGeneration\DungeonManager.cs" />

@@ -5,26 +5,28 @@ namespace BraveNewWorld
 {
     public class CameraMovement : MonoBehaviour
     {
-        [HideInInspector] public Transform target;
+        Camera camera;
+        public float dampTime = 0.15f;
+        private Vector3 velocity = Vector3.zero;
 
-        Camera cam;
-        float height;
-        float width;
+        [HideInInspector] public Transform target;
 
         void Start()
         {
-            cam = Camera.main;
-            height = 2f * cam.orthographicSize;
-            width = height * cam.aspect;           
+            camera = Camera.main;
         }
-                
-        void Update()
+
+            // Update is called once per frame
+            void Update()
         {
-            transform.position = new Vector3(target.position.x, target.position.y, -10);
-            /* new Vector3(
-                Mathf.Clamp(target.position.x, width / 2, ExplorationSceneManager.instance.dungeonManager.dungeon.MapWidth - width / 2),
-                Mathf.Clamp(target.position.y, height / 2, ExplorationSceneManager.instance.dungeonManager.dungeon.MapHeigth - height / 2),
-                -10f);*/
-        }                
+            if (target)
+            {
+                Vector3 point = camera.WorldToViewportPoint(target.position);
+                Vector3 delta = target.position - camera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, point.z)); //(new Vector3(0.5, 0.5, point.z));
+                Vector3 destination = transform.position + delta;
+                transform.position = Vector3.SmoothDamp(transform.position, destination, ref velocity, dampTime);
+            }
+
+        }       
     }
 }

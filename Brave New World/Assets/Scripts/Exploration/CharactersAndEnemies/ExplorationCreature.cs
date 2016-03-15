@@ -15,8 +15,8 @@ namespace BraveNewWorld
             WaitingAnimation,
             WaitingNextTurn,
             EndTurn
-        }        
-
+        }
+       
         CreatureState creatureState;        
         Vector2 nextPos;        
 
@@ -40,7 +40,7 @@ namespace BraveNewWorld
                         if (go.tag == "Character")
                         {                            
                             nextPos = go.transform.position;
-                            path = pathFinding.FindPath(transform.position, nextPos);//possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)]);
+                            path = pathFinding.FindPath(transform.position, nextPos);
                                                     
                             path.Remove(path[path.Count - 1]);
                         
