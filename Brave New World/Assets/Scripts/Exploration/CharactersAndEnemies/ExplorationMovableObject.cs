@@ -70,7 +70,7 @@ namespace BraveNewWorld
                         openSet.Add(neighbour.position);
                     }
                     else
-                    {
+                    {                        
                         occupiedPosList.Add(neighbour.position);
                     }
                 }
@@ -90,7 +90,10 @@ namespace BraveNewWorld
                             }
                             else if (!occupiedPosList.Contains(neighbour.position))
                             {
-                                occupiedPosList.Add(neighbour.position);
+                                if(!(i == range-1 && neighbour.OccupyingObject.tag == "Exit"))
+                                {
+                                    occupiedPosList.Add(neighbour.position);
+                                }
                             }
                         }
                     }
@@ -165,7 +168,7 @@ namespace BraveNewWorld
             {
 
                 ChangeOccupiedPosition(new Vector2(pathToFollow[pathToFollow.Length - 1].x, pathToFollow[pathToFollow.Length - 1].y));
-                transform.DOPath(pathToFollow, path.Count / (movementSpeed == 0 ? 1 : movementSpeed), PathType.Linear, PathMode.Sidescroller2D, 0).OnComplete(() => EndMovement());
+                transform.DOPath(pathToFollow, (float)(path.Count / (movementSpeed == 0 ? 1 : movementSpeed)), PathType.Linear, PathMode.Sidescroller2D, 0).OnComplete(() => EndMovement());
             }
             else
             {

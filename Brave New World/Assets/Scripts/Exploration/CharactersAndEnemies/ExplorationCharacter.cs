@@ -68,31 +68,32 @@ namespace BraveNewWorld
 
                             if (clickedObj != null)
                             {
-                                lastClickedObjectTag = clickedObj.tag;
-                                lastClickedObjectPosition = clickedObj.transform;
-
-                                //TODO VERIFICAR SE A SAíDA ESTA DENTRO DO ALCANCE DO JOGADOR
-                                if (clickedObj.tag == "MovableArea" || clickedObj.tag == "Exit")
-                                {
-                                    characterState = CharacterState.ChoosingAction;
-                                    path = new List<Tile>();
-                                    path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
-                                    ShowMovementPath();
-                                    ShowMovementActions();
-                                }
-                                else if (clickedObj.tag == "Enemy")
-                                {
-                                    if (exitHighLightParent != null)
+                                if (VerifyIfOnRange((clickedObj.tag == "Enemy" ? movementRange + 1 : movementRange), clickedObj.transform.position)) {
+                                    lastClickedObjectTag = clickedObj.tag;
+                                    lastClickedObjectPosition = clickedObj.transform;
+                                    
+                                    if (clickedObj.tag == "MovableArea" || clickedObj.tag == "Exit")
                                     {
-                                        Destroy(exitHighLightParent.gameObject);
+                                        characterState = CharacterState.ChoosingAction;
+                                        path = new List<Tile>();
+                                        path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+                                        ShowMovementPath();
+                                        ShowMovementActions();
                                     }
+                                    else if (clickedObj.tag == "Enemy")
+                                    {
+                                        if (exitHighLightParent != null)
+                                        {
+                                            Destroy(exitHighLightParent.gameObject);
+                                        }
 
-                                    characterState = CharacterState.ChoosingAction;
+                                        characterState = CharacterState.ChoosingAction;
 
-                                    path = new List<Tile>();
-                                    path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
-                                    ShowMovementPath();
-                                    ShowAttackActions();
+                                        path = new List<Tile>();
+                                        path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+                                        ShowMovementPath();
+                                        ShowAttackActions();
+                                    }
                                 }
                             }
                         }
