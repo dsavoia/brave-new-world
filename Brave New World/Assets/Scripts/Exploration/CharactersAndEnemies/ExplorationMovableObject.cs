@@ -90,7 +90,8 @@ namespace BraveNewWorld
                             }
                             else if (!occupiedPosList.Contains(neighbour.position))
                             {
-                                if(!(i == range-1 && neighbour.OccupyingObject.tag == "Exit"))
+                                //if(!(i == range-1 && neighbour.OccupyingObject.tag == "Exit"))
+                                if (i < range - 1)
                                 {
                                     occupiedPosList.Add(neighbour.position);
                                 }

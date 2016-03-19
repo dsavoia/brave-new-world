@@ -68,15 +68,16 @@ namespace BraveNewWorld
 
                             if (clickedObj != null)
                             {
-                                if (VerifyIfOnRange((clickedObj.tag == "Enemy" ? movementRange + 1 : movementRange), clickedObj.transform.position)) {
+                                path = new List<Tile>();
+                                path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+
+                                if (VerifyIfOnRange(movementRange, path.Count)) {
                                     lastClickedObjectTag = clickedObj.tag;
                                     lastClickedObjectPosition = clickedObj.transform;
                                     
                                     if (clickedObj.tag == "MovableArea" || clickedObj.tag == "Exit")
                                     {
-                                        characterState = CharacterState.ChoosingAction;
-                                        path = new List<Tile>();
-                                        path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+                                        characterState = CharacterState.ChoosingAction;                                       
                                         ShowMovementPath();
                                         ShowMovementActions();
                                     }
@@ -86,11 +87,7 @@ namespace BraveNewWorld
                                         {
                                             Destroy(exitHighLightParent.gameObject);
                                         }
-
-                                        characterState = CharacterState.ChoosingAction;
-
-                                        path = new List<Tile>();
-                                        path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+                                        characterState = CharacterState.ChoosingAction;                                       
                                         ShowMovementPath();
                                         ShowAttackActions();
                                     }
@@ -305,18 +302,23 @@ namespace BraveNewWorld
                 yield return null;
             }
 
-            if (VerifyIfOnRange(meleeAttackRange, lastClickedObjectPosition.position))
+            if (VerifyIfOnRange(meleeAttackRange, path.Count))
             {
                 characterState = CharacterState.WaitingAnimation;
                 StartCoroutine(Attack(lastClickedObjectPosition.gameObject));
             }
         }
-    
 
+        /*
         bool VerifyIfOnRange(int range, Vector2 targetPosition)
         {
-            float distance = Mathf.Sqrt(Mathf.Pow((transform.position.x - targetPosition.x),2) + Mathf.Pow((transform.position.y - targetPosition.y),2));            
+            float distance = Mathf.Sqrt(Mathf.Pow((targetPosition.x - transform.position.x),2) + Mathf.Pow((targetPosition.y - transform.position.y),2));            
             return (distance <= range);            
+        }*/
+
+        bool VerifyIfOnRange(int range, int pathCount)
+        {            
+            return (pathCount <= range);
         }
 
         public override void EndMovement()
