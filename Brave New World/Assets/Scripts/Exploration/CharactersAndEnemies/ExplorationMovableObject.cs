@@ -31,8 +31,8 @@ namespace BraveNewWorld
 
         protected Pathfinding pathFinding;
 
-        public bool isMoving = false;
-        public bool finishedMoving = true;
+        [HideInInspector] public bool isMoving = false;
+        [HideInInspector] public bool finishedMoving = true;
 
         public float movementSpeed;
 

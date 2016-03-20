@@ -38,6 +38,8 @@ namespace BraveNewWorld
         public Sprite movementActionButton;
         public Sprite attackActionButton;
 
+        public Sprite characterIcon;
+
 
         public List<GameObject> skillsPlaceHolder;
         public GameObject skillsPlaceHolderParent;
@@ -71,7 +73,8 @@ namespace BraveNewWorld
                                 path = new List<Tile>();
                                 path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
 
-                                if (VerifyIfOnRange(movementRange, path.Count)) {
+                                if (VerifyIfOnRange(movementRange, path.Count))
+                                {
                                     lastClickedObjectTag = clickedObj.tag;
                                     lastClickedObjectPosition = clickedObj.transform;
                                     
@@ -354,7 +357,7 @@ namespace BraveNewWorld
                                    
             if (hit.Length > 0)
             {
-                Debug.Log(hit[0].collider.gameObject.name);
+                //Debug.Log(hit[0].collider.gameObject.name);
                 return hit[0].collider.gameObject;
             }
             else
@@ -400,7 +403,7 @@ namespace BraveNewWorld
         public override float TakeDamage(int damage)
         {
             float animationTime = 1.0f;
-            Debug.Log("Taking Damage");
+            //Debug.Log("Taking Damage");
             actualHP -= damage;
 
             healthBar.value = actualHP;

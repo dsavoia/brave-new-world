@@ -86,6 +86,8 @@
     <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />
     <Compile Include="Assets\Scripts\Exploration\CameraMovement.cs" />
+    <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\CharacterClasses\Capitain\CaptainClass.cs" />
+    <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\CharacterClasses\Capitain\ExplorationGroupCharacterHolder.cs" />
     <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\ExplorationCharacter.cs" />
     <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\ExplorationCreature.cs" />
     <Compile Include="Assets\Scripts\Exploration\CharactersAndEnemies\ExplorationMovableObject.cs" />

@@ -8,7 +8,7 @@ namespace BraveNewWorld
     public class Pathfinding : MonoBehaviour
     {        
 
-        public GameObject pathPrefab;
+        //public GameObject pathPrefab;
 
         public List<Tile> FindPath(Vector3 startPos, Vector3 targetPos)
         {       

@@ -14,7 +14,7 @@ namespace BraveNewWorld
         private bool enemiesMoving, playerMoving;
         private Transform enemiesParent;
         private Transform exitParent;
-        private GameObject player;
+        private GameObject captainCharacter;
         private int enemiesQuantity;
 
         [HideInInspector] public ExplorationStateEnum explorationState;
@@ -34,7 +34,7 @@ namespace BraveNewWorld
         public GameObject levelText;
         public GameObject enemiesTurnText;
         public GameObject[] enemyPrefab;
-        public GameObject playerPrefab;
+        public GameObject characterPrefab;
         public GameObject pauseMenu;        
 
         public static ExplorationSceneManager instance
@@ -83,20 +83,20 @@ namespace BraveNewWorld
 
             Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
 
-            if (player == null)
+            if (captainCharacter == null)
             {
-                player = Instantiate(playerPrefab, playerInitialPos, Quaternion.identity) as GameObject;
-                playerScript = player.GetComponent<ExplorationCharacter>();
+                captainCharacter = Instantiate(characterPrefab, playerInitialPos, Quaternion.identity) as GameObject;
+                playerScript = captainCharacter.GetComponent<ExplorationCharacter>();
             }
             else
             {
-                player.transform.position = playerInitialPos;
+                captainCharacter.transform.position = playerInitialPos;
             }
 
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
-            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = player;
+            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = captainCharacter;
 
-            Camera.main.GetComponent<CameraMovement>().target = player.transform;
+            Camera.main.GetComponent<CameraMovement>().target = captainCharacter.transform;
             SetEnemies(enemiesQty);
             SetExit();
 
