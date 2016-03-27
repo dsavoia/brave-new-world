@@ -5,6 +5,6 @@ namespace BraveNewWorld
 {
     public class ExplorationGroupCharacterHolder : MonoBehaviour
     {
-        public ExplorationCharacter character;
+        [HideInInspector] public ExplorationCharacter character;
     }
 }

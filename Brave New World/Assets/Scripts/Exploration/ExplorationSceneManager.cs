@@ -10,8 +10,9 @@ namespace BraveNewWorld
 
         private static ExplorationSceneManager _instance;
         private List<ExplorationCreature> enemiesList;
-        private ExplorationCharacter playerScript;
-        private bool enemiesMoving, playerMoving;
+        private CaptainClass captainScript;
+        private ExplorationCharacter currentCharacterScript;
+        private bool enemiesMoving;//, playerMoving;
         private Transform enemiesParent;
         private Transform exitParent;
         private GameObject captainCharacter;
@@ -21,7 +22,7 @@ namespace BraveNewWorld
         [HideInInspector] public ExplorationStateEnum previousExplorationState;
         [HideInInspector] public DungeonManager dungeonManager;
         [HideInInspector] public int hours;
-        [HideInInspector] public PassOneHour passOneHour;
+        [HideInInspector] public PassOneHour passOneHour;        
 
         public int initialMapWidth;
         public int initialMapHeigth;
@@ -34,8 +35,11 @@ namespace BraveNewWorld
         public GameObject levelText;
         public GameObject enemiesTurnText;
         public GameObject[] enemyPrefab;
-        public GameObject characterPrefab;
-        public GameObject pauseMenu;        
+        //TODO: Change name to captainPrefab
+        public GameObject captainPrefab;
+        public GameObject pauseMenu;
+        public List<GameObject> explorationGroup;
+
 
         public static ExplorationSceneManager instance
         {
@@ -72,10 +76,11 @@ namespace BraveNewWorld
             enemiesList = new List<ExplorationCreature>();
             enemiesMoving = false;
             enemiesQuantity = initialEnemiesQty;
-            playerMoving = false;
+            //playerMoving = false;         
+
             InitExploration(initialMapWidth, initialMapHeigth, removeLoneWallIterations, wallLayersQty, enemiesQuantity);
             passOneHour = addHourText.GetComponent<PassOneHour>();            
-        }
+        }        
 
         void InitExploration(int initialMapWidth, int initialMapHeigth, int removeLoneWallIterations, int wallLayersQty, int enemiesQty)
         {
@@ -85,25 +90,31 @@ namespace BraveNewWorld
 
             if (captainCharacter == null)
             {
-                captainCharacter = Instantiate(characterPrefab, playerInitialPos, Quaternion.identity) as GameObject;
-                playerScript = captainCharacter.GetComponent<ExplorationCharacter>();
+                captainCharacter = Instantiate(captainPrefab, playerInitialPos, Quaternion.identity) as GameObject;
+                captainCharacter.name = "Captain";
+                captainScript = captainCharacter.GetComponent<CaptainClass>();
             }
             else
             {
                 captainCharacter.transform.position = playerInitialPos;
+                captainScript.explorationGroup.Clear();
+            }
+
+            foreach (GameObject go in explorationGroup)
+            {
+                captainScript.AddCharacterToGroup(go.GetComponent<ExplorationCharacter>());
+                go.SetActive(false);
             }
 
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = captainCharacter;
 
-            Camera.main.GetComponent<CameraMovement>().target = captainCharacter.transform;
+            SetCameraFocus(captainCharacter.transform);
             SetEnemies(enemiesQty);
             SetExit();
 
             explorationState = ExplorationStateEnum.PlayersTurn;
             levelText.GetComponent<LevelText>().UpdateLevel();
-            playerScript.BeginTurn();
-            
         }
 
         void SetEnemies(int quantity)
@@ -147,16 +158,33 @@ namespace BraveNewWorld
             switch(explorationState)
             {                
                 case (ExplorationStateEnum.PlayersTurn):
-                    if (playerScript.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
+                    if(captainScript.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
                     {
-                        playerScript.BeginTurn();
-                        //playerMoving = true;
+                        currentCharacterScript = captainScript;
+                        captainScript.BeginTurn();                        
                     }
-                    else if(playerScript.characterState == ExplorationCharacter.CharacterState.EndTurn)
-                    {                        
-                        NextTurn();
-                        playerScript.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
+                    else if (currentCharacterScript.characterState == ExplorationCharacter.CharacterState.EndTurn)
+                    {
+                        int currentCharacterIndex;
+
+                        for (currentCharacterIndex = 0; currentCharacterIndex < explorationGroup.Count; currentCharacterIndex++)
+                        {
+                            ExplorationCharacter currentCharacter = explorationGroup[currentCharacterIndex].GetComponent<ExplorationCharacter>();
+
+                            if (!captainScript.CharacterIsOnExplorationGroup(currentCharacter) && currentCharacter.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
+                            {
+                                currentCharacterScript = currentCharacter;
+                                currentCharacter.BeginTurn();
+                                break;
+                            }
+                        }
+
+                        if (currentCharacterIndex == explorationGroup.Count)
+                        {
+                            NextTurn();                            
+                        }
                     }
+                    
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
                     if (!enemiesMoving) {                        
@@ -219,9 +247,14 @@ namespace BraveNewWorld
             switch (explorationState)
             {
                 case (ExplorationStateEnum.PlayersTurn):
-                    playerMoving = false;
+                    //playerMoving = false;
                     explorationState = ExplorationStateEnum.EnemiesTurn;
                     enemiesTurnText.gameObject.SetActive(true);
+                    captainScript.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
+                    for (int i = 0; i < explorationGroup.Count; i++)
+                    {
+                        explorationGroup[i].GetComponent<ExplorationCharacter>().characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
+                    }
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
                     enemiesMoving = false;
@@ -258,12 +291,17 @@ namespace BraveNewWorld
                 enemiesQuantity += 1;
             }           
 
-            if (playerScript.actualHP < playerScript.maxHP)
+            /*if (captainScript.actualHP < captainScript.maxHP)
             {
-                playerScript.RecoverHealth(1);
-            }
+                captainScript.RecoverHealth(1);
+            }*/
 
             InitExploration(newMapWidth, newMapHeigth, removeLoneWallIterations, wallLayersQty, enemiesQuantity);
+        }
+
+        public void SetCameraFocus(Transform target)
+        {
+            Camera.main.GetComponent<CameraMovement>().target = target.transform;
         }
 
         public void GameOver()
