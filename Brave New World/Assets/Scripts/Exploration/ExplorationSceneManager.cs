@@ -10,14 +10,14 @@ namespace BraveNewWorld
 
         private static ExplorationSceneManager _instance;
         private List<ExplorationCreature> enemiesList;
-        private CaptainClass captainScript;
-        private ExplorationCharacter currentCharacterScript;
+        private CaptainClass captainScript;        
         private bool enemiesMoving;//, playerMoving;
         private Transform enemiesParent;
         private Transform exitParent;
         private GameObject captainCharacter;
         private int enemiesQuantity;
 
+        [HideInInspector] public ExplorationCharacter currentCharacterScript;
         [HideInInspector] public ExplorationStateEnum explorationState;
         [HideInInspector] public ExplorationStateEnum previousExplorationState;
         [HideInInspector] public DungeonManager dungeonManager;
@@ -82,76 +82,7 @@ namespace BraveNewWorld
             passOneHour = addHourText.GetComponent<PassOneHour>();            
         }        
 
-        void InitExploration(int initialMapWidth, int initialMapHeigth, int removeLoneWallIterations, int wallLayersQty, int enemiesQty)
-        {
-            dungeonManager.BuildMap(initialMapWidth, initialMapHeigth, removeLoneWallIterations, wallLayersQty);
-
-            Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
-
-            if (captainCharacter == null)
-            {
-                captainCharacter = Instantiate(captainPrefab, playerInitialPos, Quaternion.identity) as GameObject;
-                captainCharacter.name = "Captain";
-                captainScript = captainCharacter.GetComponent<CaptainClass>();
-            }
-            else
-            {
-                captainCharacter.transform.position = playerInitialPos;
-                captainScript.explorationGroup.Clear();
-            }
-
-            foreach (GameObject go in explorationGroup)
-            {
-                captainScript.AddCharacterToGroup(go.GetComponent<ExplorationCharacter>());
-                go.SetActive(false);
-            }
-
-            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
-            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = captainCharacter;
-
-            SetCameraFocus(captainCharacter.transform);
-            SetEnemies(enemiesQty);
-            SetExit();
-
-            explorationState = ExplorationStateEnum.PlayersTurn;
-            levelText.GetComponent<LevelText>().UpdateLevel();
-        }
-
-        void SetEnemies(int quantity)
-        {
-            Vector2 randomPos;            
-
-            enemiesParent = new GameObject("EnemiesParent").transform;
-            enemiesParent.parent = dungeonManager.map.transform;
-
-            while (quantity > 0) {
-                randomPos = dungeonManager.dungeon.FloorCoords[Random.Range(0, dungeonManager.dungeon.FloorCoords.Count)];
-                if ((randomPos.x != 1 && randomPos.y != 1) && !dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied)
-                {
-                    GameObject enemy = Instantiate(enemyPrefab[Random.Range(0, enemyPrefab.Length)], new Vector2((int)randomPos.x, (int)randomPos.y), Quaternion.identity) as GameObject;
-                    enemy.name = "Enemy" + quantity;
-                    enemy.transform.parent = enemiesParent;
-                    dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
-                    dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].OccupyingObject = enemy;
-                    enemiesList.Add(enemy.GetComponent<ExplorationCreature>());
-                    quantity--;
-                }             
-            }
-        }
-
-        void SetExit()
-        {
-            exitParent = new GameObject("ExitParent").transform;
-            exitParent.parent = dungeonManager.map.transform;
-
-            Vector2 exitPos = dungeonManager.dungeon.DoorCoords[0];
-            GameObject exit = Instantiate(dungeonManager.doorPrefab[0], exitPos, Quaternion.identity) as GameObject;
-
-            exit.name = "Exit";
-            exit.transform.parent = exitParent;
-            dungeonManager.dungeon.map[(int)exitPos.x, (int)exitPos.y].isOccupied = true;
-            dungeonManager.dungeon.map[(int)exitPos.x, (int)exitPos.y].OccupyingObject = exit;
-        }
+        
 
         void Update()
         {
@@ -160,29 +91,37 @@ namespace BraveNewWorld
                 case (ExplorationStateEnum.PlayersTurn):
                     if(captainScript.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
                     {
-                        currentCharacterScript = captainScript;
-                        captainScript.BeginTurn();                        
+                        //currentCharacterScript = captainScript;
+                        captainScript.BeginTurn();
                     }
                     else if (currentCharacterScript.characterState == ExplorationCharacter.CharacterState.EndTurn)
                     {
-                        int currentCharacterIndex;
-
-                        for (currentCharacterIndex = 0; currentCharacterIndex < explorationGroup.Count; currentCharacterIndex++)
+                        if (captainScript.characterState == ExplorationCharacter.CharacterState.OnHold)
                         {
-                            ExplorationCharacter currentCharacter = explorationGroup[currentCharacterIndex].GetComponent<ExplorationCharacter>();
+                            captainScript.BeginTurn();
+                        }
+                        else// if(currentCharacterScript.name != "Captain")
+                        {
+                            int currentCharacterIndex;
 
-                            if (!captainScript.CharacterIsOnExplorationGroup(currentCharacter) && currentCharacter.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
+                            for (currentCharacterIndex = 0; currentCharacterIndex < explorationGroup.Count; currentCharacterIndex++)
                             {
-                                currentCharacterScript = currentCharacter;
-                                currentCharacter.BeginTurn();
-                                break;
+                                ExplorationCharacter currentCharacter = explorationGroup[currentCharacterIndex].GetComponent<ExplorationCharacter>();
+
+                                if (!captainScript.CharacterIsOnExplorationGroup(currentCharacter) && currentCharacter.characterState == ExplorationCharacter.CharacterState.WaitingOrder)
+                                {
+                                    //currentCharacterScript = currentCharacter;
+                                    currentCharacter.BeginTurn();
+                                    break;
+                                }
+                            }
+
+                            if (currentCharacterIndex == explorationGroup.Count)
+                            {                                
+                                NextTurn();
                             }
                         }
-
-                        if (currentCharacterIndex == explorationGroup.Count)
-                        {
-                            NextTurn();                            
-                        }
+                        
                     }
                     
                     break;
@@ -208,6 +147,79 @@ namespace BraveNewWorld
                     ResumeGame();                    
                 }
             }
+        }
+
+        void InitExploration(int initialMapWidth, int initialMapHeigth, int removeLoneWallIterations, int wallLayersQty, int enemiesQty)
+        {
+            dungeonManager.BuildMap(initialMapWidth, initialMapHeigth, removeLoneWallIterations, wallLayersQty);
+
+            Vector3 playerInitialPos = dungeonManager.dungeon.FloorCoords[0];
+
+            if (captainCharacter == null)
+            {
+                captainCharacter = Instantiate(captainPrefab, playerInitialPos, Quaternion.identity) as GameObject;
+                captainCharacter.name = "Captain";
+                captainScript = captainCharacter.GetComponent<CaptainClass>();
+            }
+            else
+            {
+                captainCharacter.transform.position = playerInitialPos;
+                captainScript.explorationGroup.Clear();
+            }
+
+            for (int i = 0; i < explorationGroup.Count; i++)
+            {
+                GameObject groupMember = Instantiate(explorationGroup[i], Vector3.zero, Quaternion.identity) as GameObject;
+                captainScript.AddCharacterToGroup(groupMember.GetComponent<ExplorationCharacter>());
+                groupMember.SetActive(false);
+            }
+
+            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
+            dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].OccupyingObject = captainCharacter;
+
+            SetCameraFocus(captainCharacter.transform);
+            SetEnemies(enemiesQty);
+            SetExit();
+
+            explorationState = ExplorationStateEnum.PlayersTurn;
+            levelText.GetComponent<LevelText>().UpdateLevel();
+        }
+
+        void SetEnemies(int quantity)
+        {
+            Vector2 randomPos;
+
+            enemiesParent = new GameObject("EnemiesParent").transform;
+            enemiesParent.parent = dungeonManager.map.transform;
+
+            while (quantity > 0)
+            {
+                randomPos = dungeonManager.dungeon.FloorCoords[Random.Range(0, dungeonManager.dungeon.FloorCoords.Count)];
+                if ((randomPos.x != 1 && randomPos.y != 1) && !dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied)
+                {
+                    GameObject enemy = Instantiate(enemyPrefab[Random.Range(0, enemyPrefab.Length)], new Vector2((int)randomPos.x, (int)randomPos.y), Quaternion.identity) as GameObject;
+                    enemy.name = "Enemy" + quantity;
+                    enemy.transform.parent = enemiesParent;
+                    dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].isOccupied = true;
+                    dungeonManager.dungeon.map[(int)randomPos.x, (int)randomPos.y].OccupyingObject = enemy;
+                    enemiesList.Add(enemy.GetComponent<ExplorationCreature>());
+                    quantity--;
+                }
+            }
+        }
+
+        void SetExit()
+        {
+            exitParent = new GameObject("ExitParent").transform;
+            exitParent.parent = dungeonManager.map.transform;
+
+            Vector2 exitPos = dungeonManager.dungeon.DoorCoords[0];
+            GameObject exit = Instantiate(dungeonManager.doorPrefab[0], exitPos, Quaternion.identity) as GameObject;
+
+            exit.name = "Exit";
+            exit.transform.parent = exitParent;
+            dungeonManager.dungeon.map[(int)exitPos.x, (int)exitPos.y].isOccupied = true;
+            dungeonManager.dungeon.map[(int)exitPos.x, (int)exitPos.y].OccupyingObject = exit;
         }
 
         public void ResumeGame()

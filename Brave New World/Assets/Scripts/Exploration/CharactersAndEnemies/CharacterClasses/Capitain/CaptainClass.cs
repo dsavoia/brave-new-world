@@ -17,41 +17,77 @@ namespace BraveNewWorld
         {
             base.Awake();
             explorationGroup = new List<ExplorationCharacter>();
+            characterState = CharacterState.WaitingNextTurn;
         }
 
-        new void Update()
+        public override void ExecuteAction(GameObject clickedObj)
         {
-            base.Update();
-
-            switch (characterState)
+            switch (clickedObj.tag)
             {
-                case (CharacterState.ChoosingAction):
-                    if (Input.GetMouseButtonDown(0))
+                case ("CancelIcon"):
+                    if (enemiesHighLightParent != null)
                     {
-                        int actionLayerMask = LayerMask.NameToLayer("ActionsIcon");
-                        actionLayerMask = 1 << actionLayerMask;
-                        clickedObj = ClickSelect(actionLayerMask);
+                        Destroy(enemiesHighLightParent.gameObject);
+                    }
+                    if (exitHighLightParent != null)
+                    {
+                        Destroy(exitHighLightParent.gameObject);
+                    }
+                    if (pathHighlightParent != null)
+                    {
+                        Destroy(pathHighlightParent.gameObject);
+                    }
+                    if (movementParent != null)
+                    {
+                        Destroy(movementParent.gameObject);
+                    }
 
-                        if (clickedObj != null)
-                        {
-                            switch (clickedObj.tag)
-                            {
-                                case ("CharacterIcon"):
+                    HideExplorationGroupHUD();
+                    CloseActionsHUD();
+                    
+                    BeginTurn();
+                    break;
+                case ("MovementIcon"):
+                    if (pathHighlightParent != null)
+                    {
+                        Destroy(pathHighlightParent.gameObject);
+                    }
 
+                    CloseActionsHUD();
 
-
-                                    break;
-                            }
-                        }
+                    if (lastClickedObjectTag == "Enemy")
+                    {
+                        characterState = CharacterState.MovingToTarget;
+                        StartCoroutine(MoveToTarget(lastClickedObjectTransform.gameObject));
+                    }
+                    else
+                    {
+                        characterState = CharacterState.Moving;
+                        Move();
                     }
                     break;
-            }
+                case ("AttackIcon"):
+                    if (pathHighlightParent != null)
+                    {
+                        Destroy(pathHighlightParent.gameObject);
+                    }
 
+                    CloseActionsHUD();
+
+                    StartCoroutine(MoveToTargetAndAttack(lastClickedObjectTransform.gameObject));
+                    break;                
+                case ("CharacterIcon"):
+                    HideExplorationGroupHUD();
+                    StartSelectedCharacterTurn(clickedObj.GetComponent<ExplorationGroupCharacterHolder>().character);                    
+                    break;                
+                default:
+                    break;
+            }
         }
 
         public override void BeginTurn()
         {
-            if (characterState == CharacterState.WaitingNextTurn || characterState == CharacterState.ChoosingAction)
+            if (characterState == CharacterState.WaitingNextTurn || characterState == CharacterState.OnHold || characterState == CharacterState.ChoosingAction)
             {
                 characterState = CharacterState.WaitingOrder;                
                 PossibleMovement();
@@ -59,20 +95,30 @@ namespace BraveNewWorld
             else
             {
                 ShowExplorationGroupHUD();
+                characterState = CharacterState.ChoosingAction;
             }
 
+            ExplorationSceneManager.instance.currentCharacterScript = this;
             ExplorationSceneManager.instance.SetCameraFocus(transform);
 
         }
 
-        //TODO: Continue from here, member not being added properly
+        void StartSelectedCharacterTurn(ExplorationCharacter characterScript)
+        {
+            characterScript.gameObject.SetActive(true);
+            characterScript.transform.position = transform.position;
+            HoldTurn();
+            RemoveCharacterFromGroup(characterScript);
+            characterScript.BeginTurn();
+        }
+
         public void AddCharacterToGroup(ExplorationCharacter characterScript)
         {
             explorationGroup.Add(characterScript);           
 
             for(int i = 0; i < ExplorationGroupPlaceHolder.Count; i++)
             {
-                if (!ExplorationGroupPlaceHolder[i].activeInHierarchy)
+                if (!ExplorationGroupPlaceHolder[i].activeSelf)
                 {
                     ExplorationGroupCharacterHolder characterHolder = ExplorationGroupPlaceHolder[i].GetComponent<ExplorationGroupCharacterHolder>();
                     characterHolder.character = characterScript;
@@ -95,22 +141,23 @@ namespace BraveNewWorld
                     break;
                 }
             }
-        }
-
-        /*public ExplorationCharacter ChooseCharacterFromGroup(int index)
-        {
-            if(index < explorationGroup.Count)
-                return explorationGroup[index];
-
-            return null; 
-        }*/
+        }       
 
         public bool CharacterIsOnExplorationGroup(ExplorationCharacter character)
         {
-            if (explorationGroup.Contains(character))
-                return true;
 
-            return false;
+
+            /*for (int i = 0; i < explorationGroup.Count; i++)
+            {
+                if (explorationGroup[i] == character)
+                {
+                    return true;
+                }
+            }*/
+
+            return explorationGroup.Contains(character);
+
+            
         }
 
         public void ShowExplorationGroupHUD()
@@ -119,8 +166,6 @@ namespace BraveNewWorld
             {
                 return;
             }
-
-
 
             explorationGroupHUD.SetActive(true);                        
         }
@@ -139,11 +184,25 @@ namespace BraveNewWorld
         }
 
         public override void HoldTurn()
-        {
-            if (characterState == CharacterState.ChoosingAction)
+        {            
+            if (enemiesHighLightParent != null)
             {
-                base.HoldTurn();
+                Destroy(enemiesHighLightParent.gameObject);
             }
+            if (exitHighLightParent != null)
+            {
+                Destroy(exitHighLightParent.gameObject);
+            }
+            if (pathHighlightParent != null)
+            {
+                Destroy(pathHighlightParent.gameObject);
+            }
+            if (movementParent != null)
+            {
+                Destroy(movementParent.gameObject);
+            }
+
+            characterState = CharacterState.OnHold;
         }
 
     }

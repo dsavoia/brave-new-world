@@ -15,7 +15,8 @@ namespace BraveNewWorld
             ChoosingAction,
             Moving,
             MovingToTarget,
-            MovedToTarget,            
+            MovedToTarget, 
+            OnHold,           
             WaitingAnimation,
             WaitingNextTurn,
             EndTurn,
@@ -56,7 +57,7 @@ namespace BraveNewWorld
             finishedMoving = false;
             possibleMovement = new List<Vector2>();
             characterState = CharacterState.WaitingNextTurn;
-            HoldTurn();
+            //HoldTurn();
         }
 
         public void Update()
@@ -77,41 +78,7 @@ namespace BraveNewWorld
                                 path = new List<Tile>();
                                 path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
 
-                                if (clickedObj.tag == "Character")
-                                {
-                                    if (this.name != "Captain")
-                                    {
-                                        HoldTurn();
-                                    }                  
-                                    clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
-                                }
-                                else if (VerifyIfOnRange(movementRange, path.Count))
-                                {
-                                    
-                                    lastClickedObjectTag = clickedObj.tag;
-                                    lastClickedObjectTransform = clickedObj.transform;                                    
-
-                                    switch (clickedObj.tag)
-                                    {
-                                        case ("MovableArea"):
-                                        case ("Exit"):
-                                            characterState = CharacterState.ChoosingAction;
-                                            ShowMovementPath();
-                                            ShowMovementActions();
-                                            break;
-                                        case ("Enemy"):                                        
-                                            if (exitHighLightParent != null)
-                                            {
-                                                Destroy(exitHighLightParent.gameObject);
-                                            }
-                                            characterState = CharacterState.ChoosingAction;
-                                            ShowMovementPath();
-                                            ShowAttackActions();
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
+                                ExecuteOrder(clickedObj);
                             }
                         }
                         break;
@@ -124,64 +91,111 @@ namespace BraveNewWorld
 
                             if (clickedObj != null)
                             {
-                                switch (clickedObj.tag)
-                                {
-                                    case ("CancelIcon"):                                
-                                        if (enemiesHighLightParent != null)
-                                        {
-                                            Destroy(enemiesHighLightParent.gameObject);
-                                        }
-                                        if (exitHighLightParent != null)
-                                        {
-                                            Destroy(exitHighLightParent.gameObject);
-                                        }
-                                        if (pathHighlightParent != null)
-                                        {
-                                            Destroy(pathHighlightParent.gameObject);
-                                        }
-
-                                        CloseActionsHUD();
-                                        BeginTurn();
-                                        break;
-                                    case ("MovementIcon"):
-                                        if (pathHighlightParent != null)
-                                        {
-                                            Destroy(pathHighlightParent.gameObject);
-                                        }
-
-                                        CloseActionsHUD();                                        
-
-                                        if (lastClickedObjectTag == "Enemy")
-                                        {
-                                            characterState = CharacterState.MovingToTarget;
-                                            StartCoroutine(MoveToTarget(lastClickedObjectTransform.gameObject));
-                                        }                                        
-                                        else
-                                        {
-                                            characterState = CharacterState.Moving;
-                                            Move();
-                                        }
-                                        break;
-                                    case ("AttackIcon"):
-                                        if (pathHighlightParent != null)
-                                        {
-                                            Destroy(pathHighlightParent.gameObject);
-                                        }
-
-                                        CloseActionsHUD();
-
-                                        StartCoroutine(MoveToTargetAndAttack(lastClickedObjectTransform.gameObject));
-                                        break;
-                                    case ("RegroupIcon"):
-                                        lastClickedObjectTransform.gameObject.GetComponent<CaptainClass>().AddCharacterToGroup(this);
-                                        break;
-                                    default:
-                                    break;
-                                }
+                                ExecuteAction(clickedObj);
                             }
                         }
                         break;
                 }
+            }
+        }
+
+        public virtual void ExecuteOrder(GameObject clickedObj)
+        {
+            if (clickedObj.tag == "Character")
+            {
+                if (clickedObj.GetComponent<ExplorationCharacter>().characterState != CharacterState.EndTurn)
+                {
+                    if (this.name != "Captain")
+                    {
+                        HoldTurn();
+                    }
+                    clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
+                }
+            }
+            else if (VerifyIfOnRange(movementRange, path.Count))
+            {
+
+                lastClickedObjectTag = clickedObj.tag;
+                lastClickedObjectTransform = clickedObj.transform;
+
+                switch (clickedObj.tag)
+                {
+                    case ("MovableArea"):
+                    case ("Exit"):
+                        characterState = CharacterState.ChoosingAction;
+                        ShowMovementPath();
+                        ShowMovementActions();
+                        break;
+                    case ("Enemy"):
+                        if (exitHighLightParent != null)
+                        {
+                            Destroy(exitHighLightParent.gameObject);
+                        }
+                        characterState = CharacterState.ChoosingAction;
+                        ShowMovementPath();
+                        ShowAttackActions();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        public virtual void ExecuteAction(GameObject clickedObj)
+        {
+            switch (clickedObj.tag)
+            {
+                case ("CancelIcon"):
+                    if (enemiesHighLightParent != null)
+                    {
+                        Destroy(enemiesHighLightParent.gameObject);
+                    }
+                    if (exitHighLightParent != null)
+                    {
+                        Destroy(exitHighLightParent.gameObject);
+                    }
+                    if (pathHighlightParent != null)
+                    {
+                        Destroy(pathHighlightParent.gameObject);
+                    }
+
+                    CloseActionsHUD();                    
+                    BeginTurn();
+                    break;
+                case ("MovementIcon"):
+                    if (pathHighlightParent != null)
+                    {
+                        Destroy(pathHighlightParent.gameObject);
+                    }
+
+                    CloseActionsHUD();
+
+                    if (lastClickedObjectTag == "Enemy")
+                    {
+                        characterState = CharacterState.MovingToTarget;
+                        StartCoroutine(MoveToTarget(lastClickedObjectTransform.gameObject));
+                    }
+                    else
+                    {
+                        characterState = CharacterState.Moving;
+                        Move();
+                    }
+                    break;
+                case ("AttackIcon"):
+                    if (pathHighlightParent != null)
+                    {
+                        Destroy(pathHighlightParent.gameObject);
+                    }
+
+                    CloseActionsHUD();
+
+                    StartCoroutine(MoveToTargetAndAttack(lastClickedObjectTransform.gameObject));
+                    break;
+                case ("RegroupIcon"):
+                    lastClickedObjectTransform.gameObject.GetComponent<CaptainClass>().AddCharacterToGroup(this);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -198,6 +212,7 @@ namespace BraveNewWorld
         {
             characterState = CharacterState.WaitingOrder;
             ExplorationSceneManager.instance.SetCameraFocus(transform);
+            ExplorationSceneManager.instance.currentCharacterScript = this;
             PossibleMovement();
         }
 
@@ -309,7 +324,7 @@ namespace BraveNewWorld
             skillsPlaceHolderParent.SetActive(false);
         }
 
-        IEnumerator MoveToTarget(GameObject target)
+        public IEnumerator MoveToTarget(GameObject target)
         {
             if (occupiedPosList.Contains(target.transform.position))
             {
@@ -328,8 +343,8 @@ namespace BraveNewWorld
             EndMovement();
 
         }
-        
-        IEnumerator MoveToTargetAndAttack(GameObject target)
+
+        public IEnumerator MoveToTargetAndAttack(GameObject target)
         {
             StartCoroutine(MoveToTarget(target));
 
@@ -385,6 +400,14 @@ namespace BraveNewWorld
             {
                 //Debug.Log(hit[0].collider.gameObject.name);
                 //return hit[0].collider.gameObject;
+
+                //GAMBS, thanks Unity
+                for (int i = 0; i < hit.Length; i++)
+                {
+                    if (hit[i].collider.tag == "Character")
+                        return hit[i].collider.gameObject;
+                }
+
                 return hit[hit.Length-1].collider.gameObject;
             }
             else
