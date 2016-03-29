@@ -105,6 +105,7 @@ namespace BraveNewWorld
             {
                 if (clickedObj.GetComponent<ExplorationCharacter>().characterState != CharacterState.EndTurn)
                 {
+                    characterState = CharacterState.WaitingNextTurn;
                     if (this.name != "Captain")
                     {
                         HoldTurn();
@@ -212,7 +213,7 @@ namespace BraveNewWorld
         {
             characterState = CharacterState.WaitingOrder;
             ExplorationSceneManager.instance.SetCameraFocus(transform);
-            ExplorationSceneManager.instance.currentCharacterScript = this;
+            //ExplorationSceneManager.instance.currentCharacterScript = GetComponent<ExplorationCharacter>();
             PossibleMovement();
         }
 

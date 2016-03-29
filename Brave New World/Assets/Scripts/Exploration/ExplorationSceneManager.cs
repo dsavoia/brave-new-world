@@ -91,14 +91,15 @@ namespace BraveNewWorld
                 case (ExplorationStateEnum.PlayersTurn):
                     if(captainScript.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
                     {
-                        //currentCharacterScript = captainScript;
+                        currentCharacterScript = captainScript;
                         captainScript.BeginTurn();
                     }
                     else if (currentCharacterScript.characterState == ExplorationCharacter.CharacterState.EndTurn)
                     {
                         if (captainScript.characterState == ExplorationCharacter.CharacterState.OnHold)
                         {
-                            captainScript.BeginTurn();
+                            currentCharacterScript = captainScript;
+                            captainScript.BeginTurn();                            
                         }
                         else// if(currentCharacterScript.name != "Captain")
                         {
@@ -110,7 +111,7 @@ namespace BraveNewWorld
 
                                 if (!captainScript.CharacterIsOnExplorationGroup(currentCharacter) && currentCharacter.characterState == ExplorationCharacter.CharacterState.WaitingOrder)
                                 {
-                                    //currentCharacterScript = currentCharacter;
+                                    currentCharacterScript = currentCharacter;
                                     currentCharacter.BeginTurn();
                                     break;
                                 }
@@ -170,6 +171,7 @@ namespace BraveNewWorld
             for (int i = 0; i < explorationGroup.Count; i++)
             {
                 GameObject groupMember = Instantiate(explorationGroup[i], Vector3.zero, Quaternion.identity) as GameObject;
+                groupMember.name = "Character " + i;
                 captainScript.AddCharacterToGroup(groupMember.GetComponent<ExplorationCharacter>());
                 groupMember.SetActive(false);
             }

@@ -98,7 +98,7 @@ namespace BraveNewWorld
                 characterState = CharacterState.ChoosingAction;
             }
 
-            ExplorationSceneManager.instance.currentCharacterScript = this;
+            //ExplorationSceneManager.instance.currentCharacterScript = this;
             ExplorationSceneManager.instance.SetCameraFocus(transform);
 
         }
