@@ -104,8 +104,7 @@ namespace BraveNewWorld
             if (clickedObj.tag == "Character")
             {
                 if (clickedObj.GetComponent<ExplorationCharacter>().characterState != CharacterState.EndTurn)
-                {
-                    characterState = CharacterState.WaitingNextTurn;
+                {                    
                     if (this.name != "Captain")
                     {
                         HoldTurn();

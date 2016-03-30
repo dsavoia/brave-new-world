@@ -107,6 +107,7 @@ namespace BraveNewWorld
         {
             characterScript.gameObject.SetActive(true);
             characterScript.transform.position = transform.position;
+            ExplorationSceneManager.instance.currentCharacterScript = characterScript;
             HoldTurn();
             RemoveCharacterFromGroup(characterScript);
             characterScript.BeginTurn();

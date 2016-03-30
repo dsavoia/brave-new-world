@@ -23,20 +23,20 @@ namespace BraveNewWorld
         [HideInInspector] public DungeonManager dungeonManager;
         [HideInInspector] public int hours;
         [HideInInspector] public PassOneHour passOneHour;        
-
+        
         public int initialMapWidth;
         public int initialMapHeigth;
         public int removeLoneWallIterations;
         public int wallLayersQty;
         public int initialEnemiesQty;
 
-        public int level;
+        public int level;        
         public GameObject addHourText;
         public GameObject levelText;
         public GameObject enemiesTurnText;
         public GameObject[] enemyPrefab;
         //TODO: Change name to captainPrefab
-        public GameObject captainPrefab;
+        public GameObject captainPrefab;        
         public GameObject pauseMenu;
         public List<GameObject> explorationGroup;
 
@@ -80,9 +80,7 @@ namespace BraveNewWorld
 
             InitExploration(initialMapWidth, initialMapHeigth, removeLoneWallIterations, wallLayersQty, enemiesQuantity);
             passOneHour = addHourText.GetComponent<PassOneHour>();            
-        }        
-
-        
+        }                
 
         void Update()
         {
@@ -93,7 +91,7 @@ namespace BraveNewWorld
                     {
                         currentCharacterScript = captainScript;
                         captainScript.BeginTurn();
-                    }
+                    }                    
                     else if (currentCharacterScript.characterState == ExplorationCharacter.CharacterState.EndTurn)
                     {
                         if (captainScript.characterState == ExplorationCharacter.CharacterState.OnHold)
@@ -109,7 +107,7 @@ namespace BraveNewWorld
                             {
                                 ExplorationCharacter currentCharacter = explorationGroup[currentCharacterIndex].GetComponent<ExplorationCharacter>();
 
-                                if (!captainScript.CharacterIsOnExplorationGroup(currentCharacter) && currentCharacter.characterState == ExplorationCharacter.CharacterState.WaitingOrder)
+                                if (!captainScript.CharacterIsOnExplorationGroup(currentCharacter) && currentCharacter.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
                                 {
                                     currentCharacterScript = currentCharacter;
                                     currentCharacter.BeginTurn();
@@ -168,12 +166,14 @@ namespace BraveNewWorld
                 captainScript.explorationGroup.Clear();
             }
 
+
+
             for (int i = 0; i < explorationGroup.Count; i++)
             {
-                GameObject groupMember = Instantiate(explorationGroup[i], Vector3.zero, Quaternion.identity) as GameObject;
-                groupMember.name = "Character " + i;
-                captainScript.AddCharacterToGroup(groupMember.GetComponent<ExplorationCharacter>());
-                groupMember.SetActive(false);
+                explorationGroup[i] = Instantiate(explorationGroup[i], captainCharacter.transform.position, Quaternion.identity) as GameObject;
+                explorationGroup[i].name = "Character " + i;
+                captainScript.AddCharacterToGroup(explorationGroup[i].GetComponent<ExplorationCharacter>());
+                explorationGroup[i].SetActive(false);
             }
 
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
