@@ -115,9 +115,10 @@ namespace BraveNewWorld
 
         public void AddCharacterToGroup(ExplorationCharacter characterScript)
         {
-            explorationGroup.Add(characterScript);           
-
-            for(int i = 0; i < ExplorationGroupPlaceHolder.Count; i++)
+            explorationGroup.Add(characterScript);
+            characterScript.gameObject.SetActive(false);
+            characterScript.characterState = CharacterState.WaitingNextTurn;
+            for (int i = 0; i < ExplorationGroupPlaceHolder.Count; i++)
             {
                 if (!ExplorationGroupPlaceHolder[i].activeSelf)
                 {

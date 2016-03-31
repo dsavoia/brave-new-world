@@ -159,21 +159,27 @@ namespace BraveNewWorld
                 captainCharacter = Instantiate(captainPrefab, playerInitialPos, Quaternion.identity) as GameObject;
                 captainCharacter.name = "Captain";
                 captainScript = captainCharacter.GetComponent<CaptainClass>();
+
+                for (int i = 0; i < explorationGroup.Count; i++)
+                {
+                    explorationGroup[i] = Instantiate(explorationGroup[i], captainCharacter.transform.position, Quaternion.identity) as GameObject;
+                    explorationGroup[i].name = "Character " + i;
+                    captainScript.AddCharacterToGroup(explorationGroup[i].GetComponent<ExplorationCharacter>());
+                    explorationGroup[i].SetActive(false);
+                }
             }
             else
             {
                 captainCharacter.transform.position = playerInitialPos;
                 captainScript.explorationGroup.Clear();
-            }
 
-
-
-            for (int i = 0; i < explorationGroup.Count; i++)
-            {
-                explorationGroup[i] = Instantiate(explorationGroup[i], captainCharacter.transform.position, Quaternion.identity) as GameObject;
-                explorationGroup[i].name = "Character " + i;
-                captainScript.AddCharacterToGroup(explorationGroup[i].GetComponent<ExplorationCharacter>());
-                explorationGroup[i].SetActive(false);
+                foreach (GameObject explorationCharacter in explorationGroup)
+                {
+                    if (!captainScript.explorationGroup.Contains(explorationCharacter.GetComponent<ExplorationCharacter>()))
+                    {
+                        captainScript.AddCharacterToGroup(explorationCharacter.GetComponent<ExplorationCharacter>());
+                    }
+                }
             }
 
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
