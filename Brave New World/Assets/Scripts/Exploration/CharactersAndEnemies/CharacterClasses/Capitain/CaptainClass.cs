@@ -25,34 +25,13 @@ namespace BraveNewWorld
             switch (clickedObj.tag)
             {
                 case ("CancelIcon"):
-                    if (enemiesHighLightParent != null)
-                    {
-                        Destroy(enemiesHighLightParent.gameObject);
-                    }
-                    if (exitHighLightParent != null)
-                    {
-                        Destroy(exitHighLightParent.gameObject);
-                    }
-                    if (pathHighlightParent != null)
-                    {
-                        Destroy(pathHighlightParent.gameObject);
-                    }
-                    if (movementParent != null)
-                    {
-                        Destroy(movementParent.gameObject);
-                    }
-
+                    DestroyHighLights();
                     HideExplorationGroupHUD();
-                    CloseActionsHUD();
-                    
+                    CloseActionsHUD();                    
                     BeginTurn();
                     break;
                 case ("MovementIcon"):
-                    if (pathHighlightParent != null)
-                    {
-                        Destroy(pathHighlightParent.gameObject);
-                    }
-
+                    DestroyHighLights();
                     CloseActionsHUD();
 
                     if (lastClickedObjectTag == "Enemy")
@@ -67,13 +46,8 @@ namespace BraveNewWorld
                     }
                     break;
                 case ("AttackIcon"):
-                    if (pathHighlightParent != null)
-                    {
-                        Destroy(pathHighlightParent.gameObject);
-                    }
-
+                    DestroyHighLights();
                     CloseActionsHUD();
-
                     StartCoroutine(MoveToTargetAndAttack(lastClickedObjectTransform.gameObject));
                     break;                
                 case ("CharacterIcon"):
@@ -92,32 +66,36 @@ namespace BraveNewWorld
                 characterState = CharacterState.WaitingOrder;                
                 PossibleMovement();
             }
-            else
+            else if(explorationGroup.Count > 0)
             {
-                ShowExplorationGroupHUD();
-                characterState = CharacterState.ChoosingAction;
+                ShowExplorationGroupHUD();                
             }
-
-            //ExplorationSceneManager.instance.currentCharacterScript = this;
+            
             ExplorationSceneManager.instance.SetCameraFocus(transform);
 
         }
 
         void StartSelectedCharacterTurn(ExplorationCharacter characterScript)
         {
+            HoldTurn();
             characterScript.gameObject.SetActive(true);
             characterScript.transform.position = transform.position;
-            ExplorationSceneManager.instance.currentCharacterScript = characterScript;
-            HoldTurn();
+            ExplorationSceneManager.instance.currentCharacterScript = characterScript;            
             RemoveCharacterFromGroup(characterScript);
             characterScript.BeginTurn();
         }
 
         public void AddCharacterToGroup(ExplorationCharacter characterScript)
         {
-            explorationGroup.Add(characterScript);
-            characterScript.gameObject.SetActive(false);
+            explorationGroup.Add(characterScript);            
+            characterScript.wasInGroup = true;
             characterScript.characterState = CharacterState.WaitingNextTurn;
+
+            ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)characterScript.transform.position.x, (int)characterScript.transform.position.y].isOccupied = false;
+            ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)characterScript.transform.position.x, (int)characterScript.transform.position.y].OccupyingObject = null;
+            
+            characterScript.gameObject.SetActive(false);
+
             for (int i = 0; i < ExplorationGroupPlaceHolder.Count; i++)
             {
                 if (!ExplorationGroupPlaceHolder[i].activeSelf)
@@ -147,19 +125,16 @@ namespace BraveNewWorld
 
         public bool CharacterIsOnExplorationGroup(ExplorationCharacter character)
         {
+            return explorationGroup.Contains(character);            
+        }
 
-
-            /*for (int i = 0; i < explorationGroup.Count; i++)
+        void OnTriggerEnter2D(Collider2D other)
+        {
+            if (other.tag == "Exit")
             {
-                if (explorationGroup[i] == character)
-                {
-                    return true;
-                }
-            }*/
-
-            return explorationGroup.Contains(character);
-
-            
+                characterState = CharacterState.WaitingAnimation;
+                StartCoroutine(WaitAndExit());
+            }
         }
 
         public void ShowExplorationGroupHUD()
@@ -169,7 +144,8 @@ namespace BraveNewWorld
                 return;
             }
 
-            explorationGroupHUD.SetActive(true);                        
+            explorationGroupHUD.SetActive(true);
+            characterState = CharacterState.ChoosingAction;
         }
 
         public void HideExplorationGroupHUD()
@@ -186,24 +162,8 @@ namespace BraveNewWorld
         }
 
         public override void HoldTurn()
-        {            
-            if (enemiesHighLightParent != null)
-            {
-                Destroy(enemiesHighLightParent.gameObject);
-            }
-            if (exitHighLightParent != null)
-            {
-                Destroy(exitHighLightParent.gameObject);
-            }
-            if (pathHighlightParent != null)
-            {
-                Destroy(pathHighlightParent.gameObject);
-            }
-            if (movementParent != null)
-            {
-                Destroy(movementParent.gameObject);
-            }
-
+        {
+            DestroyHighLights();
             characterState = CharacterState.OnHold;
         }
 

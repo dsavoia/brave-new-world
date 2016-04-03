@@ -9,9 +9,8 @@ namespace BraveNewWorld
     {
 
         private static ExplorationSceneManager _instance;
-        private List<ExplorationCreature> enemiesList;
-        private CaptainClass captainScript;        
-        private bool enemiesMoving;//, playerMoving;
+        private List<ExplorationCreature> enemiesList;        
+        private bool enemiesMoving;
         private Transform enemiesParent;
         private Transform exitParent;
         private GameObject captainCharacter;
@@ -29,13 +28,13 @@ namespace BraveNewWorld
         public int removeLoneWallIterations;
         public int wallLayersQty;
         public int initialEnemiesQty;
+        public CaptainClass captainScript;
 
         public int level;        
         public GameObject addHourText;
         public GameObject levelText;
         public GameObject enemiesTurnText;
-        public GameObject[] enemyPrefab;
-        //TODO: Change name to captainPrefab
+        public GameObject[] enemyPrefab;        
         public GameObject captainPrefab;        
         public GameObject pauseMenu;
         public List<GameObject> explorationGroup;
@@ -75,8 +74,7 @@ namespace BraveNewWorld
             dungeonManager = GetComponent<DungeonManager>();               
             enemiesList = new List<ExplorationCreature>();
             enemiesMoving = false;
-            enemiesQuantity = initialEnemiesQty;
-            //playerMoving = false;         
+            enemiesQuantity = initialEnemiesQty;            
 
             InitExploration(initialMapWidth, initialMapHeigth, removeLoneWallIterations, wallLayersQty, enemiesQuantity);
             passOneHour = addHourText.GetComponent<PassOneHour>();            
@@ -99,7 +97,7 @@ namespace BraveNewWorld
                             currentCharacterScript = captainScript;
                             captainScript.BeginTurn();                            
                         }
-                        else// if(currentCharacterScript.name != "Captain")
+                        else
                         {
                             int currentCharacterIndex;
 
@@ -172,6 +170,7 @@ namespace BraveNewWorld
             {
                 captainCharacter.transform.position = playerInitialPos;
                 captainScript.explorationGroup.Clear();
+                captainScript.CleanExplorationGroupHUD();
 
                 foreach (GameObject explorationCharacter in explorationGroup)
                 {
@@ -180,6 +179,8 @@ namespace BraveNewWorld
                         captainScript.AddCharacterToGroup(explorationCharacter.GetComponent<ExplorationCharacter>());
                     }
                 }
+
+                captainScript.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
             }
 
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
@@ -190,7 +191,7 @@ namespace BraveNewWorld
             SetExit();
 
             explorationState = ExplorationStateEnum.PlayersTurn;
-            levelText.GetComponent<LevelText>().UpdateLevel();
+            levelText.GetComponent<LevelText>().UpdateLevel();            
         }
 
         void SetEnemies(int quantity)
@@ -266,8 +267,7 @@ namespace BraveNewWorld
         {
             switch (explorationState)
             {
-                case (ExplorationStateEnum.PlayersTurn):
-                    //playerMoving = false;
+                case (ExplorationStateEnum.PlayersTurn):                    
                     explorationState = ExplorationStateEnum.EnemiesTurn;
                     enemiesTurnText.gameObject.SetActive(true);
                     captainScript.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
@@ -309,12 +309,7 @@ namespace BraveNewWorld
             else if (level % 3 == 0)
             {
                 enemiesQuantity += 1;
-            }           
-
-            /*if (captainScript.actualHP < captainScript.maxHP)
-            {
-                captainScript.RecoverHealth(1);
-            }*/
+            }
 
             InitExploration(newMapWidth, newMapHeigth, removeLoneWallIterations, wallLayersQty, enemiesQuantity);
         }

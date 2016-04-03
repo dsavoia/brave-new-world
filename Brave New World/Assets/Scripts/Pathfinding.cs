@@ -6,10 +6,7 @@ namespace BraveNewWorld
 {
 
     public class Pathfinding : MonoBehaviour
-    {        
-
-        //public GameObject pathPrefab;
-
+    {   
         public List<Tile> FindPath(Vector3 startPos, Vector3 targetPos)
         {       
 
@@ -41,8 +38,7 @@ namespace BraveNewWorld
                 }
 
                 foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(currentTile))
-                {
-                    //if (neighbour.isOccupied || closedSet.Contains(neighbour))
+                {                   
                     if (neighbour.tileType != TileTypeEnum.Floor || closedSet.Contains(neighbour))
                     {
                         continue;
