@@ -32,6 +32,9 @@ namespace BraveNewWorld
         public GameObject exitHighLightPB;
         protected Transform exitHighLightParent;
 
+        public GameObject friendsHighLightPB;
+        protected Transform friendsHighlightParent;
+
         protected Transform pathHighlightParent;
         public GameObject pathHighlightPB;
 
@@ -61,7 +64,8 @@ namespace BraveNewWorld
             finishedMoving = false;
             wasInGroup = false;
             possibleMovement = new List<Vector2>();
-            characterState = CharacterState.WaitingNextTurn;            
+            SetCharacterStateToWaitingNextTurn();
+            //characterState = CharacterState.WaitingNextTurn;            
         }
 
         public void Update()
@@ -108,8 +112,7 @@ namespace BraveNewWorld
                 }
             }
         }
-
-        //TODO: Override on Captain so things don't get messed up
+        
         public virtual void ExecuteOrder(GameObject clickedObj)
         {
             if (clickedObj.tag == "Character")
@@ -118,27 +121,21 @@ namespace BraveNewWorld
 
                 if (clickedCharacter.name == "Captain")
                 {
-                    if (this.name == "Captain")
+                    if (VerifyIfOnRange(movementRange, path.Count))
                     {
-                        this.GetComponent<CaptainClass>().ShowExplorationGroupHUD();
+                        ShowMovementPath();
+                        lastClickedObjectTag = clickedObj.tag;
+                        lastClickedObjectTransform = clickedObj.transform;
+                        ShowRegroupAction();
+                        characterState = CharacterState.ChoosingAction;
                     }
-                    else 
+                    else if(clickedCharacter.characterState != CharacterState.EndTurn)
                     {
-                        if (VerifyIfOnRange(movementRange, path.Count))
-                        {
-                            ShowMovementPath();
-                            lastClickedObjectTag = clickedObj.tag;
-                            lastClickedObjectTransform = clickedObj.transform;
-                            ShowRegroupAction();
-                            characterState = CharacterState.ChoosingAction;
-                        }
-                        else if(clickedCharacter.characterState != CharacterState.EndTurn)
-                        {
-                            HoldTurn();
-                            ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
-                            clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
-                        }
+                        HoldTurn();
+                        ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
+                        clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
                     }
+                    
                 }
                 else if (clickedCharacter.characterState != CharacterState.EndTurn)
                 {
@@ -146,6 +143,14 @@ namespace BraveNewWorld
                     ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
                     clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
                 }
+            }
+            else if (clickedObj.tag == "CancelIcon")
+            {
+                DestroyHighLights();
+                CloseActionsHUD();
+                ExplorationSceneManager.instance.captainScript.AddCharacterToGroup(this);
+                ExplorationSceneManager.instance.currentCharacterScript = ExplorationSceneManager.instance.captainScript;
+                ExplorationSceneManager.instance.captainScript.BeginTurn();
             }
             else if (VerifyIfOnRange(movementRange, path.Count))
             {
@@ -155,10 +160,15 @@ namespace BraveNewWorld
                 switch (clickedObj.tag)
                 {
                     case ("MovableArea"):
-                    case ("Exit"):
                         characterState = CharacterState.ChoosingAction;
                         ShowMovementPath();
                         ShowMovementActions();
+                        break;
+                    case ("Exit"):                        
+
+                        //TODO: Show Feedback Message "I can't leave without my Captain"
+                        //MAYBE: Put reference to "The Dead Poets Society" movie
+
                         break;
                     case ("Enemy"):                        
                         DestroyHighLights();
@@ -220,14 +230,18 @@ namespace BraveNewWorld
                     StartCoroutine(MoveToTargetAndAttack(lastClickedObjectTransform.gameObject));
                     break;
                 case ("RegroupIcon"):
-                    StartCoroutine(MovingtToCaptain(captain));
+                    CloseActionsHUD();
+                    StartCoroutine(MovingToCaptain(captain));
                     break;
                 case ("CharacterIcon"):
-                    DestroyHighLights();
-                    CloseActionsHUD();
-                    HoldTurn();
-                    ExplorationSceneManager.instance.currentCharacterScript = captain;
-                    captain.BeginTurn();
+                    if (captain.characterState != CharacterState.EndTurn)
+                    {
+                        DestroyHighLights();
+                        CloseActionsHUD();
+                        HoldTurn();
+                        ExplorationSceneManager.instance.currentCharacterScript = captain;
+                        captain.BeginTurn();
+                    }
                     break;
                 default:
                     break;
@@ -246,6 +260,12 @@ namespace BraveNewWorld
                 ShowTurnCancelOption();                
             }
 
+        }
+
+        public virtual void SetCharacterStateToWaitingNextTurn()
+        {
+            GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
+            characterState = CharacterState.WaitingNextTurn;
         }
 
         //Gives the option of canceling the group exit
@@ -269,6 +289,10 @@ namespace BraveNewWorld
             {
                 Destroy(pathHighlightParent.gameObject);
             }
+            if (friendsHighlightParent != null)
+            {
+                Destroy(friendsHighlightParent.gameObject);
+            }
             if (movementParent != null)
             {
                 Destroy(movementParent.gameObject);
@@ -277,41 +301,27 @@ namespace BraveNewWorld
 
         public virtual void HoldTurn()
         {
-            characterState = CharacterState.WaitingNextTurn;
+            //characterState = CharacterState.WaitingNextTurn;
+            SetCharacterStateToWaitingNextTurn();
             DestroyHighLights();
         }
 
-        //TODO: This probably should be in the Captain
-        protected IEnumerator WaitAndExit()
-        {
-            while (characterState == CharacterState.WaitingAnimation)
-            {
-                yield return null;
-            }
-
-            ExplorationSceneManager.instance.NextLevel();
-        }
-
-
-
-        protected IEnumerator MovingtToCaptain(CaptainClass captain)
+        protected IEnumerator MovingToCaptain(CaptainClass captain)
         {
             
             path = new List<Tile>();
             path = pathFinding.FindPath(transform.position, captain.transform.position);
-            characterState = CharacterState.MovingToTarget;
-            path.RemoveAt(path.Count - 1);
+            characterState = CharacterState.MovingToTarget;            
             Move();            
 
             while (characterState == CharacterState.MovingToTarget)
             {
                 yield return null;
             }           
-
-            ExplorationSceneManager.instance.currentCharacterScript = captain;
+                        
             DestroyHighLights();
             captain.AddCharacterToGroup(this);
-            captain.BeginTurn();
+            EndMovement();            
         }
 
         public void ShowMovementPath()
@@ -332,7 +342,6 @@ namespace BraveNewWorld
             }
         }
 
-
         //TODO: MAKE BETTER ACTION ICONS PLACEMENT!!
         public virtual void ShowMovementActions()
         {
@@ -346,6 +355,7 @@ namespace BraveNewWorld
             if (!(path.Count == 1 && lastClickedObjectTag == "Enemy"))
             {
                 skillsPlaceHolder[0].GetComponent<Image>().sprite = movementActionButton;
+                skillsPlaceHolder[0].GetComponent<Image>().color = Color.white;
                 skillsPlaceHolder[0].tag = "MovementIcon";
                 skillsPlaceHolder[0].SetActive(true);
             }
@@ -379,6 +389,16 @@ namespace BraveNewWorld
             OpenActionsHUD();
 
             skillsPlaceHolder[0].GetComponent<Image>().sprite = ExplorationSceneManager.instance.captainScript.characterIcon;
+
+            if (ExplorationSceneManager.instance.captainScript.characterState == CharacterState.EndTurn)
+            {
+                skillsPlaceHolder[0].GetComponent<Image>().color = Color.gray;
+            }
+            else
+            {
+                skillsPlaceHolder[0].GetComponent<Image>().color = Color.white;
+            }
+                        
             skillsPlaceHolder[0].tag = "CharacterIcon";
             skillsPlaceHolder[0].SetActive(true);
 
@@ -444,7 +464,7 @@ namespace BraveNewWorld
             }
         }        
 
-        bool VerifyIfOnRange(int range, int pathCount)
+        protected bool VerifyIfOnRange(int range, int pathCount)
         {            
             return (pathCount <= range);
         }
@@ -458,7 +478,7 @@ namespace BraveNewWorld
                 case CharacterState.MovedToTarget:
                 case CharacterState.Moving:
                     characterState = CharacterState.EndTurn;
-                    //DestroyHighLights();
+                    SetCharacterToEndTurnColor();                    
                     wasInGroup = false;                 
                     break;
                 case CharacterState.MovingToTarget:
@@ -466,7 +486,12 @@ namespace BraveNewWorld
                     break;
             }      
 
-        }       
+        }    
+        
+        public virtual void SetCharacterToEndTurnColor()
+        {
+            GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.4f);
+        }
 
         protected GameObject ClickSelect(LayerMask layerMask)
         {            
@@ -500,7 +525,10 @@ namespace BraveNewWorld
         public override void HighLightObjectsArroundMe()
         {            
             enemiesHighLightParent = new GameObject(gameObject.name + " EnemiesHightlightParent").transform;
-            enemiesHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);            
+            enemiesHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
+
+            friendsHighlightParent = new GameObject(gameObject.name + " FriendsHightlightParent").transform;
+            friendsHighlightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
 
             foreach (GameObject go in objectsArroundMe)
             {
@@ -518,6 +546,12 @@ namespace BraveNewWorld
                     instance.transform.SetParent(exitHighLightParent.transform);
 
                 }
+                if (go.tag == "Character")
+                {
+                    GameObject instance = Instantiate(friendsHighLightPB, go.transform.position, Quaternion.identity) as GameObject;
+                    instance.transform.SetParent(friendsHighlightParent.transform);
+                }
+
             }
         }        
 
@@ -552,7 +586,8 @@ namespace BraveNewWorld
             float animationTime = 1.0f;
             characterState = CharacterState.Dead;
             yield return new WaitForSeconds(animationTime);
-            ExplorationSceneManager.instance.GameOver();             
+            gameObject.SetActive(false);
+            ExplorationSceneManager.instance.explorationGroup.Remove(gameObject);            
         }
     }
 }

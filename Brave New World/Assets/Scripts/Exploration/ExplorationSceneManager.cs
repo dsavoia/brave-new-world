@@ -163,6 +163,7 @@ namespace BraveNewWorld
                     explorationGroup[i] = Instantiate(explorationGroup[i], captainCharacter.transform.position, Quaternion.identity) as GameObject;
                     explorationGroup[i].name = "Character " + i;
                     captainScript.AddCharacterToGroup(explorationGroup[i].GetComponent<ExplorationCharacter>());
+                    explorationGroup[i].GetComponent<ExplorationCharacter>().SetCharacterStateToWaitingNextTurn();// = ExplorationCharacter.CharacterState.WaitingNextTurn;
                     explorationGroup[i].SetActive(false);
                 }
             }
@@ -178,9 +179,11 @@ namespace BraveNewWorld
                     {
                         captainScript.AddCharacterToGroup(explorationCharacter.GetComponent<ExplorationCharacter>());
                     }
+
+                    explorationCharacter.GetComponent<ExplorationCharacter>().SetCharacterStateToWaitingNextTurn();// = ExplorationCharacter.CharacterState.WaitingNextTurn;
                 }
 
-                captainScript.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
+                captainScript.SetCharacterStateToWaitingNextTurn();// characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
             }
 
             dungeonManager.dungeon.map[(int)playerInitialPos.x, (int)playerInitialPos.y].isOccupied = true;
@@ -270,10 +273,10 @@ namespace BraveNewWorld
                 case (ExplorationStateEnum.PlayersTurn):                    
                     explorationState = ExplorationStateEnum.EnemiesTurn;
                     enemiesTurnText.gameObject.SetActive(true);
-                    captainScript.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
+                    captainScript.SetCharacterStateToWaitingNextTurn();// characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
                     for (int i = 0; i < explorationGroup.Count; i++)
                     {
-                        explorationGroup[i].GetComponent<ExplorationCharacter>().characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
+                        explorationGroup[i].GetComponent<ExplorationCharacter>().SetCharacterStateToWaitingNextTurn();//.characterState = ExplorationCharacter.CharacterState.WaitingNextTurn;
                     }
                     break;
                 case (ExplorationStateEnum.EnemiesTurn):
@@ -281,6 +284,7 @@ namespace BraveNewWorld
                     explorationState = ExplorationStateEnum.PlayersTurn;
                     addHourText.gameObject.SetActive(true);
                     enemiesTurnText.gameObject.SetActive(false);
+                    
                     break;
                 default:
                     break;

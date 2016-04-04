@@ -122,7 +122,10 @@ namespace BraveNewWorld
                 objectsArroundMe.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)occupiedPos.x, (int)occupiedPos.y].OccupyingObject);
             }
 
-            possibleMovement.Add(pos);
+            if (!possibleMovement.Contains(pos))
+            {
+                possibleMovement.Add(pos);
+            }
         }
 
         protected void PossibleMovement()
