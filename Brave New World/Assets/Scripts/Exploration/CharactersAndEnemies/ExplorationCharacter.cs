@@ -63,7 +63,7 @@ namespace BraveNewWorld
             //showMyPossibleMovement = true;
             finishedMoving = false;
             wasInGroup = false;
-            possibleMovement = new List<Vector2>();
+            possibleActionRange = new List<Vector2>();
             SetCharacterStateToWaitingNextTurn();
             //characterState = CharacterState.WaitingNextTurn;            
         }
@@ -253,7 +253,7 @@ namespace BraveNewWorld
             characterState = CharacterState.WaitingOrder;
             ExplorationSceneManager.instance.SetCameraFocus(transform);            
             DestroyHighLights();
-            PossibleMovement();
+            PossibleActionRange(movementHighlightPB, movementParent, movementRange, 0, "Movement");
 
             if (wasInGroup)
             {
@@ -277,6 +277,11 @@ namespace BraveNewWorld
 
         public void DestroyHighLights()
         {
+
+            if (actionRangeParent != null)
+            {
+                Destroy(actionRangeParent.gameObject);
+            }
             if (enemiesHighLightParent != null)
             {
                 Destroy(enemiesHighLightParent.gameObject);
@@ -293,10 +298,10 @@ namespace BraveNewWorld
             {
                 Destroy(friendsHighlightParent.gameObject);
             }
-            if (movementParent != null)
+            /*if (movementParent != null)
             {
                 Destroy(movementParent.gameObject);
-            }
+            }*/
         }
 
         public virtual void HoldTurn()
@@ -522,7 +527,7 @@ namespace BraveNewWorld
             }
         }
 
-        public override void HighLightObjectsArroundMe()
+        public override void HighLightObjectsArround()
         {            
             enemiesHighLightParent = new GameObject(gameObject.name + " EnemiesHightlightParent").transform;
             enemiesHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);

@@ -11,9 +11,11 @@ namespace BraveNewWorld
 {
     public abstract class ExplorationMovableObject : MonoBehaviour
     {
-        protected List<Vector2> possibleMovement;
+        protected List<Vector2> possibleActionRange;
         protected List<Vector2> occupiedPosList;
         protected List<GameObject> objectsArroundMe;
+
+        protected Transform actionRangeParent;
 
         protected Transform movementParent;
         protected List<Tile> path;
@@ -43,7 +45,7 @@ namespace BraveNewWorld
         protected void Awake()
         {
             path = new List<Tile>();
-            possibleMovement = new List<Vector2>();
+            possibleActionRange = new List<Vector2>();
             occupiedPosList = new List<Vector2>();
             objectsArroundMe = new List<GameObject>();
             pathFinding = GameObject.Find("Pathfinding").GetComponent<Pathfinding>();
@@ -54,12 +56,14 @@ namespace BraveNewWorld
             healthBar.value = actualHP;
         }
        
-        protected void CalculatePossiblePosition(int range, Vector2 pos)
+        protected List<Vector2> CalculatePossibleRange(int range, Vector2 pos)
         {
+
+            List<Vector2>  actionRange = new List<Vector2>();
             Tile actualPos = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y];
             List<Vector2> openSet = new List<Vector2>();
             List<Vector2> auxiliarSet = new List<Vector2>();
-
+                        
             //Adding first neighbours
             foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(actualPos))
             {
@@ -70,14 +74,14 @@ namespace BraveNewWorld
                         openSet.Add(neighbour.position);
                     }
                     else
-                    {                        
+                    {
                         occupiedPosList.Add(neighbour.position);
                     }
                 }
-            }
+            }            
 
             for (int i = 0; i < range; i++)
-            {
+            {                
                 foreach (Vector2 openSetPos in openSet)
                 {
                     foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)openSetPos.x, (int)openSetPos.y]))
@@ -99,12 +103,12 @@ namespace BraveNewWorld
                         }
                     }
 
-                    if (!possibleMovement.Contains(openSetPos))
+                    if (!possibleActionRange.Contains(openSetPos))
                     {
-                        possibleMovement.Add(openSetPos);
+                        possibleActionRange.Add(openSetPos);
                     }
                 }
-
+                
                 openSet.Clear();
 
                 foreach (Vector2 auxiliarPos in auxiliarSet)
@@ -112,46 +116,72 @@ namespace BraveNewWorld
                     openSet.Add(auxiliarPos);
                 }
 
-                auxiliarSet.Clear();
+                auxiliarSet.Clear();                
             }
 
-            occupiedPosList.Remove(pos);
+            occupiedPosList.Remove(pos);            
+
+            if (!possibleActionRange.Contains(pos))
+            {
+                possibleActionRange.Add(pos);
+            }
+
+            return possibleActionRange;
+        }
+
+        protected void PossibleActionRange(GameObject actionHighlight, Transform actionParent, int actionRange, int ignoreActionRange, string actionName)
+        {
+            possibleActionRange = new List<Vector2>();
+            objectsArroundMe = new List<GameObject>();
+            occupiedPosList = new List<Vector2>();
+
+            List<Vector2> ignoredActionRange = new List<Vector2>();
+            
+            possibleActionRange = CalculatePossibleRange(actionRange, transform.position);
+
+            //TODO: CONTINUE FROM HERE
+            if (ignoreActionRange > 0)
+            {
+                ignoredActionRange = CalculatePossibleRange(ignoreActionRange, transform.position);
+
+                for (int i = 0; i < ignoredActionRange.Count; i++)
+                {
+                    if (possibleActionRange.Contains(ignoredActionRange[i]))
+                    {
+                        possibleActionRange.Remove(ignoredActionRange[i]);
+
+                        if (occupiedPosList.Contains(ignoredActionRange[i]))
+                        {
+                            occupiedPosList.Remove(ignoredActionRange[i]);
+                        }
+                    }
+                }
+            }
 
             foreach (Vector2 occupiedPos in occupiedPosList)
             {
                 objectsArroundMe.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)occupiedPos.x, (int)occupiedPos.y].OccupyingObject);
             }
 
-            if (!possibleMovement.Contains(pos))
-            {
-                possibleMovement.Add(pos);
-            }
-        }
-
-        protected void PossibleMovement()
-        {
-            possibleMovement = new List<Vector2>();
-            objectsArroundMe = new List<GameObject>();
-            occupiedPosList = new List<Vector2>();
-
-            CalculatePossiblePosition(movementRange, transform.position);
-
             if (showMyPossibleMovement)
             {
-                movementParent = new GameObject(gameObject.name + " MovementParent").transform;
-                movementParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
+                actionRangeParent = new GameObject(gameObject.name + " Action Range Parent").transform;
+                actionRangeParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
+
+                actionParent = new GameObject(gameObject.name + " " + actionName + " Parent").transform;
+                actionParent.transform.SetParent(actionRangeParent);
 
                 GameObject instance;
 
                 if (occupiedPosList.Count > 0)
                 {
-                    HighLightObjectsArroundMe();
+                    HighLightObjectsArround();
                 }
 
-                for (int i = 0; i < possibleMovement.Count; i++)
+                for (int i = 0; i < possibleActionRange.Count; i++)
                 {
-                    instance = Instantiate(movementHighlightPB, possibleMovement[i], Quaternion.identity) as GameObject;
-                    instance.transform.SetParent(movementParent);
+                    instance = Instantiate(actionHighlight, possibleActionRange[i], Quaternion.identity) as GameObject;
+                    instance.transform.SetParent(actionParent);
                 }
             }
 
@@ -225,7 +255,7 @@ namespace BraveNewWorld
             healthBar.value = actualHP;
         }
 
-        public abstract void HighLightObjectsArroundMe();
+        public abstract void HighLightObjectsArround();
     }
 }
 

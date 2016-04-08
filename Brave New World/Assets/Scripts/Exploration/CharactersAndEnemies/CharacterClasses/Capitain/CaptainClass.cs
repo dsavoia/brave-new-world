@@ -124,7 +124,7 @@ namespace BraveNewWorld
             if (characterState == CharacterState.WaitingNextTurn || characterState == CharacterState.OnHold || characterState == CharacterState.ChoosingAction)
             {
                 characterState = CharacterState.WaitingOrder;                
-                PossibleMovement();
+                PossibleActionRange(movementHighlightPB, movementParent, movementRange, 0, "Movement");
             }
             else if(explorationGroup.Count > 0)
             {

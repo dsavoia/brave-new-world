@@ -31,7 +31,7 @@ namespace BraveNewWorld
                 nextPos = new Vector2();
 
                 path.Clear();
-                PossibleMovement();
+                PossibleActionRange(movementHighlightPB, movementParent, movementRange, 0, "Movement");
 
                 if (objectsArroundMe.Count > 0)
                 {                    
@@ -58,7 +58,7 @@ namespace BraveNewWorld
                 else
                 {
                     do {
-                        nextPos = possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)];
+                        nextPos = possibleActionRange[UnityEngine.Random.Range(0, possibleActionRange.Count)];
                     } while (nextPos == new Vector2(transform.position.x, transform.position.y));
 
                     creatureState = CreatureState.Moving;
@@ -69,7 +69,7 @@ namespace BraveNewWorld
             if (path.Count == 0)
             {
                 do { 
-                 path = pathFinding.FindPath(transform.position, possibleMovement[UnityEngine.Random.Range(0, possibleMovement.Count)]);
+                 path = pathFinding.FindPath(transform.position, possibleActionRange[UnityEngine.Random.Range(0, possibleActionRange.Count)]);
                 } while(path.Count == 0);
                 creatureState = CreatureState.Moving;
             }
@@ -97,7 +97,7 @@ namespace BraveNewWorld
             }
         }
 
-        public override void HighLightObjectsArroundMe()
+        public override void HighLightObjectsArround()
         {            
             enemiesHighLightParent = new GameObject(gameObject.name + " EnemiesHightlightParent").transform;
             enemiesHighLightParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);
