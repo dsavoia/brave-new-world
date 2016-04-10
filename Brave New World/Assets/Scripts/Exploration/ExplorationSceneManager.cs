@@ -17,6 +17,7 @@ namespace BraveNewWorld
         private int enemiesQuantity;
 
         [HideInInspector] public ExplorationCharacter currentCharacterScript;
+        [HideInInspector] public ExplorationCharacter previousCharacterScript;
         [HideInInspector] public ExplorationStateEnum explorationState;
         [HideInInspector] public ExplorationStateEnum previousExplorationState;
         [HideInInspector] public DungeonManager dungeonManager;
@@ -86,15 +87,15 @@ namespace BraveNewWorld
             {                
                 case (ExplorationStateEnum.PlayersTurn):
                     if(captainScript.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
-                    {
-                        currentCharacterScript = captainScript;
+                    {                        
+                        SetCurrentCharacterScript(captainScript);
                         captainScript.BeginTurn();
                     }                    
                     else if (currentCharacterScript.characterState == ExplorationCharacter.CharacterState.EndTurn)
                     {
                         if (captainScript.characterState == ExplorationCharacter.CharacterState.OnHold)
                         {
-                            currentCharacterScript = captainScript;
+                            SetCurrentCharacterScript(captainScript);
                             captainScript.BeginTurn();                            
                         }
                         else
@@ -107,7 +108,8 @@ namespace BraveNewWorld
 
                                 if (!captainScript.CharacterIsOnExplorationGroup(currentCharacter) && currentCharacter.characterState == ExplorationCharacter.CharacterState.WaitingNextTurn)
                                 {
-                                    currentCharacterScript = currentCharacter;
+                                    SetCurrentCharacterScript(currentCharacter);
+                                    ExplorationSceneManager.instance.previousCharacterScript = currentCharacter;
                                     currentCharacter.BeginTurn();
                                     break;
                                 }
@@ -195,6 +197,12 @@ namespace BraveNewWorld
 
             explorationState = ExplorationStateEnum.PlayersTurn;
             levelText.GetComponent<LevelText>().UpdateLevel();            
+        }
+
+        public void SetCurrentCharacterScript(ExplorationCharacter newCurrentCharacter)
+        {
+            previousCharacterScript = currentCharacterScript;
+            currentCharacterScript = newCurrentCharacter;
         }
 
         void SetEnemies(int quantity)

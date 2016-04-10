@@ -10,6 +10,7 @@ namespace BraveNewWorld
     public class ExplorationCharacter : ExplorationMovableObject
     {
 
+        //TODO: Make it a separate enum file
         public enum CharacterState
         {
             WaitingOrder,
@@ -17,7 +18,8 @@ namespace BraveNewWorld
             Moving,
             MovingToTarget,
             MovedToTarget, 
-            OnHold,           
+            OnHold,
+            SelectingRangedTarget,
             WaitingAnimation,
             WaitingNextTurn,
             EndTurn,
@@ -132,7 +134,7 @@ namespace BraveNewWorld
                     else if(clickedCharacter.characterState != CharacterState.EndTurn)
                     {
                         HoldTurn();
-                        ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
+                        ExplorationSceneManager.instance.SetCurrentCharacterScript(clickedObj.GetComponent<ExplorationCharacter>());
                         clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
                     }
                     
@@ -140,7 +142,7 @@ namespace BraveNewWorld
                 else if (clickedCharacter.characterState != CharacterState.EndTurn)
                 {
                     HoldTurn();
-                    ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
+                    ExplorationSceneManager.instance.SetCurrentCharacterScript(clickedObj.GetComponent<ExplorationCharacter>());
                     clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
                 }
             }
@@ -149,7 +151,7 @@ namespace BraveNewWorld
                 DestroyHighLights();
                 CloseActionsHUD();
                 ExplorationSceneManager.instance.captainScript.AddCharacterToGroup(this);
-                ExplorationSceneManager.instance.currentCharacterScript = ExplorationSceneManager.instance.captainScript;
+                ExplorationSceneManager.instance.SetCurrentCharacterScript(ExplorationSceneManager.instance.captainScript);
                 ExplorationSceneManager.instance.captainScript.BeginTurn();
             }
             else if (VerifyIfOnRange(movementRange, path.Count))
@@ -180,7 +182,7 @@ namespace BraveNewWorld
                         DestroyHighLights();
                         CloseActionsHUD();
                         ExplorationSceneManager.instance.captainScript.AddCharacterToGroup(this);
-                        ExplorationSceneManager.instance.currentCharacterScript = ExplorationSceneManager.instance.captainScript;
+                        ExplorationSceneManager.instance.SetCurrentCharacterScript(ExplorationSceneManager.instance.captainScript);
                         ExplorationSceneManager.instance.captainScript.BeginTurn();
                         break;
                     default:
@@ -239,7 +241,7 @@ namespace BraveNewWorld
                         DestroyHighLights();
                         CloseActionsHUD();
                         HoldTurn();
-                        ExplorationSceneManager.instance.currentCharacterScript = captain;
+                        ExplorationSceneManager.instance.SetCurrentCharacterScript(captain);
                         captain.BeginTurn();
                     }
                     break;
@@ -253,7 +255,7 @@ namespace BraveNewWorld
             characterState = CharacterState.WaitingOrder;
             ExplorationSceneManager.instance.SetCameraFocus(transform);            
             DestroyHighLights();
-            PossibleActionRange(movementHighlightPB, movementParent, movementRange, 0, "Movement");
+            PossibleActionRange(movementHighlightPB, movementParent, movementRange, 0, "Movement");            
 
             if (wasInGroup)
             {

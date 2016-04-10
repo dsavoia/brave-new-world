@@ -20,7 +20,7 @@ namespace BraveNewWorld
         protected Transform movementParent;
         protected List<Tile> path;
 
-        public bool showMyPossibleMovement;
+        public bool showActionRange;
         protected bool showedPossibleMovements;
 
         public GameObject movementHighlightPB;
@@ -62,8 +62,8 @@ namespace BraveNewWorld
             List<Vector2>  actionRange = new List<Vector2>();
             Tile actualPos = ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)pos.x, (int)pos.y];
             List<Vector2> openSet = new List<Vector2>();
-            List<Vector2> auxiliarSet = new List<Vector2>();
-                        
+            List<Vector2> auxiliarSet = new List<Vector2>();            
+
             //Adding first neighbours
             foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(actualPos))
             {
@@ -103,9 +103,9 @@ namespace BraveNewWorld
                         }
                     }
 
-                    if (!possibleActionRange.Contains(openSetPos))
+                    if (!actionRange.Contains(openSetPos))
                     {
-                        possibleActionRange.Add(openSetPos);
+                        actionRange.Add(openSetPos);
                     }
                 }
                 
@@ -121,20 +121,19 @@ namespace BraveNewWorld
 
             occupiedPosList.Remove(pos);            
 
-            if (!possibleActionRange.Contains(pos))
+            if (!actionRange.Contains(pos))
             {
-                possibleActionRange.Add(pos);
+                actionRange.Add(pos);
             }
 
-            return possibleActionRange;
+            return actionRange;
         }
 
         protected void PossibleActionRange(GameObject actionHighlight, Transform actionParent, int actionRange, int ignoreActionRange, string actionName)
-        {
-            possibleActionRange = new List<Vector2>();
+        {            
             objectsArroundMe = new List<GameObject>();
+            possibleActionRange = new List<Vector2>();
             occupiedPosList = new List<Vector2>();
-
             List<Vector2> ignoredActionRange = new List<Vector2>();
             
             possibleActionRange = CalculatePossibleRange(actionRange, transform.position);
@@ -142,18 +141,13 @@ namespace BraveNewWorld
             //TODO: CONTINUE FROM HERE
             if (ignoreActionRange > 0)
             {
-                ignoredActionRange = CalculatePossibleRange(ignoreActionRange, transform.position);
+                ignoredActionRange = CalculatePossibleRange(ignoreActionRange, transform.position);                
 
                 for (int i = 0; i < ignoredActionRange.Count; i++)
                 {
                     if (possibleActionRange.Contains(ignoredActionRange[i]))
                     {
-                        possibleActionRange.Remove(ignoredActionRange[i]);
-
-                        if (occupiedPosList.Contains(ignoredActionRange[i]))
-                        {
-                            occupiedPosList.Remove(ignoredActionRange[i]);
-                        }
+                        possibleActionRange.Remove(ignoredActionRange[i]);                        
                     }
                 }
             }
@@ -163,7 +157,7 @@ namespace BraveNewWorld
                 objectsArroundMe.Add(ExplorationSceneManager.instance.dungeonManager.dungeon.map[(int)occupiedPos.x, (int)occupiedPos.y].OccupyingObject);
             }
 
-            if (showMyPossibleMovement)
+            if (showActionRange)
             {
                 actionRangeParent = new GameObject(gameObject.name + " Action Range Parent").transform;
                 actionRangeParent.transform.SetParent(ExplorationSceneManager.instance.dungeonManager.map.transform);

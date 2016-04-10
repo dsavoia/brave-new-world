@@ -1,18 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
+using DG.Tweening;
 
 namespace BraveNewWorld
 {
 
     public class CombatantClass : ExplorationCharacter
     {
-
-
         public GameObject RangedAttackHighlightPB;
+        public GameObject projectilePB;
         protected Transform rangedAttackParent;
         public int rangedAttackRange = 1;
         public int ignoredRangedAttackRange = 1;
+        public float projectileSpeed = 1;
+        public int rangedAttackDamage = 1;
         public Sprite rangedAttackActionButton;
 
 
@@ -20,6 +23,73 @@ namespace BraveNewWorld
         void Start()
         {
 
+        }
+
+        public new void Update()
+        {
+            if (ExplorationSceneManager.instance.explorationState == ExplorationStateEnum.PlayersTurn)
+            {
+                switch (characterState)
+                {
+                    case (CharacterState.WaitingOrder):
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            int orderLayerMask = LayerMask.NameToLayer("Clickable");
+                            orderLayerMask = 1 << orderLayerMask;
+
+                            int actionLayerMask = LayerMask.NameToLayer("ActionsIcon");
+                            actionLayerMask = 1 << actionLayerMask;
+
+                            orderLayerMask = orderLayerMask | actionLayerMask;
+
+                            clickedObj = ClickSelect(orderLayerMask);                            
+
+                            if (clickedObj != null)
+                            {
+                                if (lastClickedObjectTag == "RangedAttackIcon")
+                                {
+                                    ExecuteRangedAttackAction();
+                                }
+                                else
+                                {
+                                    path = new List<Tile>();
+                                    path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+
+                                    ExecuteOrder(clickedObj);
+                                }
+                            }
+                        }
+                        break;
+                    case (CharacterState.ChoosingAction):
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            int actionLayerMask = LayerMask.NameToLayer("ActionsIcon");
+                            actionLayerMask = 1 << actionLayerMask;
+                            clickedObj = ClickSelect(actionLayerMask);
+
+                            if (clickedObj != null)
+                            {
+                                ExecuteAction(clickedObj);
+                            }
+                        }
+                        break;
+                    /*case (CharacterState.SelectingRangedTarget):
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            int orderLayerMask = LayerMask.NameToLayer("Clickable");
+                            orderLayerMask = 1 << orderLayerMask;
+
+                            int actionLayerMask = LayerMask.NameToLayer("ActionsIcon");
+                            actionLayerMask = 1 << actionLayerMask;
+
+                            if (clickedObj != null)
+                            {
+                                ExecuteAction(clickedObj);
+                            }
+                        }
+                        break;*/
+                }
+            }
         }
 
         //TODO: Temporary, only while Combatant has a different color. For the next 2 methods
@@ -77,6 +147,9 @@ namespace BraveNewWorld
                     DestroyHighLights();
                     CloseActionsHUD();
                     PossibleActionRange(RangedAttackHighlightPB, rangedAttackParent, rangedAttackRange, ignoredRangedAttackRange, "RangedAttack");
+                    ShowRangedCancelAction();
+                    lastClickedObjectTag = "RangedAttackIcon";
+                    characterState = CharacterState.WaitingOrder;
                     break;
                 case ("RegroupIcon"):
                     CloseActionsHUD();
@@ -88,7 +161,7 @@ namespace BraveNewWorld
                         DestroyHighLights();
                         CloseActionsHUD();
                         HoldTurn();
-                        ExplorationSceneManager.instance.currentCharacterScript = captain;
+                        ExplorationSceneManager.instance.SetCurrentCharacterScript(captain);
                         captain.BeginTurn();
                     }
                     break;
@@ -116,19 +189,19 @@ namespace BraveNewWorld
                     else if (clickedCharacter.characterState != CharacterState.EndTurn)
                     {
                         HoldTurn();
-                        ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
+                        ExplorationSceneManager.instance.SetCurrentCharacterScript(clickedObj.GetComponent<ExplorationCharacter>());
                         clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
                     }
 
                 }
-                else if (clickedCharacter == this)
+                else if (clickedCharacter == this && ExplorationSceneManager.instance.previousCharacterScript == this)
                 {
                     ShowRangedAttackActions();
                 }
                 else if (clickedCharacter.characterState != CharacterState.EndTurn)
                 {
                     HoldTurn();
-                    ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
+                    ExplorationSceneManager.instance.SetCurrentCharacterScript(clickedObj.GetComponent<ExplorationCharacter>());
                     clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
                 }
             }
@@ -137,7 +210,7 @@ namespace BraveNewWorld
                 DestroyHighLights();
                 CloseActionsHUD();
                 ExplorationSceneManager.instance.captainScript.AddCharacterToGroup(this);
-                ExplorationSceneManager.instance.currentCharacterScript = ExplorationSceneManager.instance.captainScript;
+                ExplorationSceneManager.instance.SetCurrentCharacterScript(ExplorationSceneManager.instance.captainScript);
                 ExplorationSceneManager.instance.captainScript.BeginTurn();
             }
             else if (VerifyIfOnRange(movementRange, path.Count))
@@ -168,13 +241,67 @@ namespace BraveNewWorld
                         DestroyHighLights();
                         CloseActionsHUD();
                         ExplorationSceneManager.instance.captainScript.AddCharacterToGroup(this);
-                        ExplorationSceneManager.instance.currentCharacterScript = ExplorationSceneManager.instance.captainScript;
+                        ExplorationSceneManager.instance.SetCurrentCharacterScript(ExplorationSceneManager.instance.captainScript);
                         ExplorationSceneManager.instance.captainScript.BeginTurn();
                         break;
                     default:
                         break;
                 }
             }
+        }
+
+        public void ExecuteRangedAttackAction()
+        {
+            switch (clickedObj.tag)
+            {               
+                case ("Enemy"):
+                    DestroyHighLights();
+
+                    path = new List<Tile>();
+                    path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
+
+                    if (path.Count > ignoredRangedAttackRange)
+                    {
+                        if (VerifyIfOnRange(rangedAttackRange, path.Count))
+                        {
+                            CloseActionsHUD();
+                            lastClickedObjectTag = "";
+                            StartCoroutine(RangedAttackAnimation(clickedObj));
+                        }
+                    }
+                    break;
+                case ("CancelIcon"):
+                    DestroyHighLights();
+                    CloseActionsHUD();
+                    lastClickedObjectTag = "";
+                    BeginTurn();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+        public IEnumerator RangedAttackAnimation(GameObject target)
+        {        
+            characterState = CharacterState.WaitingAnimation;
+
+            GameObject projectile = Instantiate(projectilePB, transform.position, Quaternion.identity) as GameObject;
+
+            ExplorationSceneManager.instance.SetCameraFocus(projectile.transform);
+
+            projectile.transform.DOMove(target.transform.position, projectileSpeed).OnComplete(() => {                
+                target.GetComponent<ExplorationCreature>().TakeDamage(rangedAttackDamage);
+                characterState = CharacterState.MovedToTarget;
+            });
+
+            while (characterState == CharacterState.WaitingAnimation)
+            {
+                yield return null;
+            }
+
+            Destroy(projectile.gameObject);
+            EndMovement();
         }
 
 
@@ -188,6 +315,12 @@ namespace BraveNewWorld
 
             AddCancelOption();
             characterState = CharacterState.ChoosingAction;
+        }
+
+        public void ShowRangedCancelAction()
+        {
+            OpenActionsHUD();
+            AddCancelOption();
         }
 
     }

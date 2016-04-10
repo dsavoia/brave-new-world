@@ -37,7 +37,7 @@ namespace BraveNewWorld
                 else if (clickedCharacter.characterState != CharacterState.EndTurn)
                 {
                     HoldTurn();
-                    ExplorationSceneManager.instance.currentCharacterScript = clickedObj.GetComponent<ExplorationCharacter>();
+                    ExplorationSceneManager.instance.SetCurrentCharacterScript(clickedObj.GetComponent<ExplorationCharacter>());
                     clickedObj.GetComponent<ExplorationCharacter>().BeginTurn();
                 }
             }
@@ -151,7 +151,7 @@ namespace BraveNewWorld
             HoldTurn();
             characterScript.gameObject.SetActive(true);
             characterScript.transform.position = transform.position;
-            ExplorationSceneManager.instance.currentCharacterScript = characterScript;            
+            ExplorationSceneManager.instance.SetCurrentCharacterScript(characterScript);
             RemoveCharacterFromGroup(characterScript);
             characterScript.BeginTurn();
         }
