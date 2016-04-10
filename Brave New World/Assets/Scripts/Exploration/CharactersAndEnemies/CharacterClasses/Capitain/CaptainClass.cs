@@ -27,7 +27,7 @@ namespace BraveNewWorld
             {
                 ExplorationCharacter clickedCharacter = clickedObj.GetComponent<ExplorationCharacter>();
 
-                if (clickedCharacter.name == "Captain")
+                if (clickedCharacter == this)
                 {
                     if (explorationGroup.Count > 0)
                     {
@@ -233,7 +233,6 @@ namespace BraveNewWorld
 
                 }
             }
-
             
             characterState = CharacterState.ChoosingAction;
         }

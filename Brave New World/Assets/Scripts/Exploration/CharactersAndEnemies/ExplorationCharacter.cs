@@ -464,7 +464,7 @@ namespace BraveNewWorld
                 yield return null;
             }
 
-            if (VerifyIfOnRange(meleeAttackRange, path.Count))
+            if (VerifyIfOnRange(meleeAttackRange, path.Count-1))
             {
                 characterState = CharacterState.WaitingAnimation;
                 StartCoroutine(Attack(lastClickedObjectTransform.gameObject));

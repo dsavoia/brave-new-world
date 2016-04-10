@@ -254,8 +254,7 @@ namespace BraveNewWorld
         {
             switch (clickedObj.tag)
             {               
-                case ("Enemy"):
-                    DestroyHighLights();
+                case ("Enemy"):                   
 
                     path = new List<Tile>();
                     path = pathFinding.FindPath(transform.position, clickedObj.transform.position);
@@ -264,6 +263,7 @@ namespace BraveNewWorld
                     {
                         if (VerifyIfOnRange(rangedAttackRange, path.Count))
                         {
+                            DestroyHighLights();
                             CloseActionsHUD();
                             lastClickedObjectTag = "";
                             StartCoroutine(RangedAttackAnimation(clickedObj));

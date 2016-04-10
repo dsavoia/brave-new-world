@@ -68,12 +68,10 @@ namespace BraveNewWorld
             foreach (Tile neighbour in ExplorationSceneManager.instance.dungeonManager.dungeon.GetNeighbours(actualPos))
             {
                 if (neighbour.tileType == TileTypeEnum.Floor)
-                {
-                    if (!neighbour.isOccupied)
-                    {
-                        openSet.Add(neighbour.position);
-                    }
-                    else
+                {   
+                    openSet.Add(neighbour.position);
+
+                    if (neighbour.isOccupied && !occupiedPosList.Contains(neighbour.position))
                     {
                         occupiedPosList.Add(neighbour.position);
                     }
@@ -88,13 +86,11 @@ namespace BraveNewWorld
                     {
                         if (neighbour.tileType == TileTypeEnum.Floor && !auxiliarSet.Contains(neighbour.position))
                         {
-                            if (!neighbour.isOccupied)
-                            {
-                                auxiliarSet.Add(neighbour.position);
-                            }
-                            else if (!occupiedPosList.Contains(neighbour.position))
-                            {
-                                //if(!(i == range-1 && neighbour.OccupyingObject.tag == "Exit"))
+                            
+                            auxiliarSet.Add(neighbour.position);
+
+                            if (neighbour.isOccupied && !occupiedPosList.Contains(neighbour.position))
+                            {                            
                                 if (i < range - 1)
                                 {
                                     occupiedPosList.Add(neighbour.position);
@@ -137,8 +133,7 @@ namespace BraveNewWorld
             List<Vector2> ignoredActionRange = new List<Vector2>();
             
             possibleActionRange = CalculatePossibleRange(actionRange, transform.position);
-
-            //TODO: CONTINUE FROM HERE
+            
             if (ignoreActionRange > 0)
             {
                 ignoredActionRange = CalculatePossibleRange(ignoreActionRange, transform.position);                
@@ -149,6 +144,18 @@ namespace BraveNewWorld
                     {
                         possibleActionRange.Remove(ignoredActionRange[i]);                        
                     }
+                    if (occupiedPosList.Contains(ignoredActionRange[i]))
+                    {
+                        occupiedPosList.Remove(ignoredActionRange[i]);
+                    }
+                }
+            }
+
+            for (int i = 0; i < occupiedPosList.Count; i++)
+            {
+                if (possibleActionRange.Contains(occupiedPosList[i]))
+                {
+                    possibleActionRange.Remove(occupiedPosList[i]);
                 }
             }
 
